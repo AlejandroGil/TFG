@@ -1,3 +1,4 @@
+package userBased;
 import java.io.File;
 import java.util.List;
 import org.grouplens.lenskit.*;
@@ -8,14 +9,14 @@ import org.grouplens.lenskit.baseline.UserMeanItemScorer;
 import org.grouplens.lenskit.core.*;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.text.TextEventDAO;
-import org.grouplens.lenskit.knn.item.ItemItemScorer;
 import org.grouplens.lenskit.knn.user.UserUserItemScorer;
 import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
+import org.grouplens.lenskit.transform.normalize.MeanCenteringVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
+import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 
-public class LensKitTest {
+public class LensKitTestUB {
 
 	//----------------- COLABORATIVE FILTERING - USER-BASED RECOMMENDATION -----------------//
 	
@@ -39,8 +40,7 @@ public class LensKitTest {
 		
 		//-----> Normalized
 		config.bind(UserVectorNormalizer.class).to(DefaultUserVectorNormalizer.class);
-		
-		
+				
 		//Connecting the Data Source
 		//config.bind(EventDAO.class).to(new SimpleFileRatingDAO(new File("ratings.csv"), ",")); -----> deprecated
 	
