@@ -30,7 +30,7 @@ public class LenskitTestIB {
 		config.bind(UserMeanBaseline.class, ItemScorer.class).to(ItemMeanRatingItemScorer.class);
 		config.bind(UserVectorNormalizer.class).to(DefaultUserVectorNormalizer.class);
 		
-		config.bind(EventDAO.class).to(TextEventDAO.ratings(new File("src/main/resources/u.data"), ","));
+		config.bind(EventDAO.class).to(TextEventDAO.ratings(new File("src/main/resources/u.data"), "	"));
 
 		
 		try {
