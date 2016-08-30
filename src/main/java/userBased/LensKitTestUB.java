@@ -46,7 +46,7 @@ public class LensKitTestUB {
 		//Connecting the Data Source
 		//config.bind(EventDAO.class).to(new SimpleFileRatingDAO(new File("ratings.csv"), ",")); -----> deprecated
 	
-		config.bind(EventDAO.class).to(TextEventDAO.ratings(new File("src/main/resources/ratings.csv"), "	"));
+		config.bind(EventDAO.class).to(TextEventDAO.ratings(new File("src/main/resources/u.data"), "	"));
 		
 		//Creating the recommender
 		try {
