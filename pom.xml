@@ -6,10 +6,12 @@
   <name>TFG</name>
   <description>TFG - Framework orientado a algoritmos de recomendación basados en vecinos cercanos</description>
   
- 	<repository>
- 		<id>jitpack.io</id>
- 		<url>https://jitpack.io</url>
-	</repository>
+ 	<repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
   
   <dependencies>
   

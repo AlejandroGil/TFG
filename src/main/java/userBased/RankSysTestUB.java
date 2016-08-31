@@ -1,6 +1,46 @@
 package userBased;
 
+import static org.ranksys.formats.parsing.Parsers.lp;
+
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.IntPredicate;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import org.jooq.lambda.Unchecked;
+import org.ranksys.formats.index.ItemsReader;
+import org.ranksys.formats.index.UsersReader;
+import org.ranksys.formats.preference.SimpleRatingPreferencesReader;
+import org.ranksys.formats.rec.RecommendationFormat;
+import org.ranksys.formats.rec.SimpleRecommendationFormat;  
+
+import es.uam.eps.ir.ranksys.fast.index.FastItemIndex;
+import es.uam.eps.ir.ranksys.fast.index.FastUserIndex;
+import es.uam.eps.ir.ranksys.fast.index.SimpleFastItemIndex;
+import es.uam.eps.ir.ranksys.fast.index.SimpleFastUserIndex;
+import es.uam.eps.ir.ranksys.fast.preference.FastPreferenceData;
+import es.uam.eps.ir.ranksys.fast.preference.SimpleFastPreferenceData;
+import es.uam.eps.ir.ranksys.nn.item.ItemNeighborhoodRecommender;
+import es.uam.eps.ir.ranksys.nn.item.neighborhood.CachedItemNeighborhood;
+import es.uam.eps.ir.ranksys.nn.item.neighborhood.ItemNeighborhood;
+import es.uam.eps.ir.ranksys.nn.item.neighborhood.TopKItemNeighborhood;
+import es.uam.eps.ir.ranksys.nn.item.sim.ItemSimilarity;
+import es.uam.eps.ir.ranksys.nn.item.sim.VectorCosineItemSimilarity;
+import es.uam.eps.ir.ranksys.nn.user.UserNeighborhoodRecommender;
+import es.uam.eps.ir.ranksys.nn.user.neighborhood.TopKUserNeighborhood;
+import es.uam.eps.ir.ranksys.nn.user.neighborhood.UserNeighborhood;
+import es.uam.eps.ir.ranksys.nn.user.sim.UserSimilarity;
+import es.uam.eps.ir.ranksys.nn.user.sim.VectorCosineUserSimilarity;
+import es.uam.eps.ir.ranksys.rec.Recommender;
+import es.uam.eps.ir.ranksys.rec.fast.basic.PopularityRecommender;
+import es.uam.eps.ir.ranksys.rec.fast.basic.RandomRecommender;
+import es.uam.eps.ir.ranksys.rec.runner.RecommenderRunner;
+import es.uam.eps.ir.ranksys.rec.runner.fast.FastFilterRecommenderRunner;
+import es.uam.eps.ir.ranksys.rec.runner.fast.FastFilters;
 
 /**
  * Example main of recommendations.
@@ -11,7 +51,7 @@ import java.util.Map;
 
 public class RankSysTestUB {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 
 		String userPath = args[0];
         String itemPath = args[1];
