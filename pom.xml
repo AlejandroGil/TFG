@@ -2,9 +2,15 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.uam.es</groupId>
   <artifactId>TFG</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.2-SNAPSHOT</version>
   <name>TFG</name>
   <description>TFG - Framework orientado a algoritmos de recomendación basados en vecinos cercanos</description>
+  
+ 	<repository>
+ 		<id>jitpack.io</id>
+ 		<url>https://jitpack.io</url>
+	</repository>
+  
   <dependencies>
   
   	<dependency>
@@ -13,7 +19,7 @@
   		<version>2.2.1</version>
   	</dependency>
   	
-  	  <dependency>
+  	<dependency>
        <groupId>org.slf4j</groupId>
        <artifactId>slf4j-api</artifactId>
        <version>1.7.5</version>
@@ -23,8 +29,12 @@
        <artifactId>slf4j-log4j12</artifactId>
        <version>1.7.5</version>
    </dependency>
-  	
-  	
+
+  	<dependency>
+    <groupId>org.ranksys</groupId>
+    <artifactId>RankSys</artifactId>
+    <version>0.4.3</version>
+</dependency>
   	
   </dependencies>
   
