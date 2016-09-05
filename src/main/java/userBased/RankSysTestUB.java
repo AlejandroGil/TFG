@@ -53,13 +53,16 @@ public class RankSysTestUB {
 
 	public static void main(String[] args) throws IOException {
 
-		String userPath = args[0];
-        String itemPath = args[1];
-        String trainDataPath = args[2];
-        String testDataPath = args[3];
+		String userPath = "src/main/resources/u.data";
+        String itemPath = "src/main/resources/u.data";
+        String trainDataPath = "src/main/resources/u.data";
+        String testDataPath = "src/main/resources/u.data";
 
+        /*Loading user and item indexes ("0", "1", "2"... etc)*/
         FastUserIndex<Long> userIndex = SimpleFastUserIndex.load(UsersReader.read(userPath, lp));
         FastItemIndex<Long> itemIndex = SimpleFastItemIndex.load(ItemsReader.read(itemPath, lp));
+        
+        /*Reading rating file*/
         FastPreferenceData<Long, Long> trainData = SimpleFastPreferenceData.load(SimpleRatingPreferencesReader.get().read(trainDataPath, lp, lp), userIndex, itemIndex);
         FastPreferenceData<Long, Long> testData = SimpleFastPreferenceData.load(SimpleRatingPreferencesReader.get().read(testDataPath, lp, lp), userIndex, itemIndex);
 
