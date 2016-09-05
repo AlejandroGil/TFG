@@ -53,10 +53,10 @@ public class RankSysTestUB {
 
 	public static void main(String[] args) throws IOException {
 
-		String userPath = "src/main/resources/u.data";
-        String itemPath = "src/main/resources/u.data";
-        String trainDataPath = "src/main/resources/u.data";
-        String testDataPath = "src/main/resources/u.data";
+		String userPath = "src/main/resources/users.txt";
+        String itemPath = "src/main/resources/items.txt";
+        String trainDataPath = "src/main/resources/u1.base";
+        String testDataPath = "src/main/resources/u1.test";
 
         /*Loading user and item indexes ("0", "1", "2"... etc)*/
         FastUserIndex<Long> userIndex = SimpleFastUserIndex.load(UsersReader.read(userPath, lp));
@@ -122,6 +122,7 @@ public class RankSysTestUB {
 		}
 		}));
 		
+		System.out.println("\nDone!");
 	}
 
 }
