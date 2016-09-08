@@ -1,4 +1,4 @@
-package userBased;
+package rankSysTest;
 
 import static org.ranksys.formats.parsing.Parsers.lp;
 
@@ -49,7 +49,7 @@ import es.uam.eps.ir.ranksys.rec.runner.fast.FastFilters;
  * @author Pablo Castells (pablo.castells@uam.es)
  */
 
-public class RankSysTestUB {
+public class RankSysTest {
 
 	public static void main(String[] args) throws IOException {
 
