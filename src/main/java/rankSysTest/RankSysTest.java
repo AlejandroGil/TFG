@@ -112,7 +112,9 @@ public class RankSysTest {
 		Set<Long> targetUsers = testData.getUsersWithPreferences().collect(Collectors.toSet());
 		RecommendationFormat<Long, Long> format = new SimpleRecommendationFormat<>(lp, lp);
 		Function<Long, IntPredicate> filter = FastFilters.notInTrain(trainData);
-		int maxLength = 100;
+		
+		//Generate 20 recomendations per user
+		int maxLength = 20;
 		RecommenderRunner<Long, Long> runner = new FastFilterRecommenderRunner<>(userIndex, itemIndex, targetUsers.stream(), filter, maxLength);
 		
 		recMap.forEach(Unchecked.biConsumer((name, recommender) -> {
