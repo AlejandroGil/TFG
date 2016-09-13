@@ -30,7 +30,9 @@ import es.uam.eps.ir.ranksys.nn.item.neighborhood.ItemNeighborhood;
 import es.uam.eps.ir.ranksys.nn.item.neighborhood.TopKItemNeighborhood;
 import es.uam.eps.ir.ranksys.nn.item.sim.ItemSimilarity;
 import es.uam.eps.ir.ranksys.nn.item.sim.VectorCosineItemSimilarity;
+import es.uam.eps.ir.ranksys.nn.neighborhood.ThresholdNeighborhood;
 import es.uam.eps.ir.ranksys.nn.user.UserNeighborhoodRecommender;
+import es.uam.eps.ir.ranksys.nn.user.neighborhood.ThresholdUserNeighborhood;
 import es.uam.eps.ir.ranksys.nn.user.neighborhood.TopKUserNeighborhood;
 import es.uam.eps.ir.ranksys.nn.user.neighborhood.UserNeighborhood;
 import es.uam.eps.ir.ranksys.nn.user.sim.UserSimilarity;
@@ -88,7 +90,11 @@ public class RankSysTest {
             int q = 1;
 
             UserSimilarity<Long> sim = new VectorCosineUserSimilarity<>(trainData, alpha, true);
+            /*No Threshold*/
             UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
+            
+            /*With Threshold*/
+            //ThresholdUserNeighborhood<Long> neighborhood = new ThresholdUserNeighborhood<>(sim, 0.3);
 
             return new UserNeighborhoodRecommender<>(trainData, neighborhood, q);
         });
@@ -110,6 +116,8 @@ public class RankSysTest {
 		// GENERATING RECOMMENDATIONS //
 		////////////////////////////////
 		Set<Long> targetUsers = testData.getUsersWithPreferences().collect(Collectors.toSet());
+		
+		/*OUTPUT FORMAT -> userid	itemid	score */
 		RecommendationFormat<Long, Long> format = new SimpleRecommendationFormat<>(lp, lp);
 		Function<Long, IntPredicate> filter = FastFilters.notInTrain(trainData);
 		
