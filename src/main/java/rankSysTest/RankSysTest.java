@@ -16,7 +16,7 @@ import org.ranksys.formats.index.ItemsReader;
 import org.ranksys.formats.index.UsersReader;
 import org.ranksys.formats.preference.SimpleRatingPreferencesReader;
 import org.ranksys.formats.rec.RecommendationFormat;
-import org.ranksys.formats.rec.SimpleRecommendationFormat;  
+import org.ranksys.formats.rec.SimpleRecommendationFormat;
 
 import es.uam.eps.ir.ranksys.fast.index.FastItemIndex;
 import es.uam.eps.ir.ranksys.fast.index.FastUserIndex;
@@ -30,9 +30,7 @@ import es.uam.eps.ir.ranksys.nn.item.neighborhood.ItemNeighborhood;
 import es.uam.eps.ir.ranksys.nn.item.neighborhood.TopKItemNeighborhood;
 import es.uam.eps.ir.ranksys.nn.item.sim.ItemSimilarity;
 import es.uam.eps.ir.ranksys.nn.item.sim.VectorCosineItemSimilarity;
-import es.uam.eps.ir.ranksys.nn.neighborhood.ThresholdNeighborhood;
 import es.uam.eps.ir.ranksys.nn.user.UserNeighborhoodRecommender;
-import es.uam.eps.ir.ranksys.nn.user.neighborhood.ThresholdUserNeighborhood;
 import es.uam.eps.ir.ranksys.nn.user.neighborhood.TopKUserNeighborhood;
 import es.uam.eps.ir.ranksys.nn.user.neighborhood.UserNeighborhood;
 import es.uam.eps.ir.ranksys.nn.user.sim.UserSimilarity;
