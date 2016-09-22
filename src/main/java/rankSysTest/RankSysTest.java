@@ -107,9 +107,6 @@ public class RankSysTest {
             ItemNeighborhood<Long> neighborhood = new TopKItemNeighborhood<>(sim, k);
             neighborhood = new CachedItemNeighborhood<>(neighborhood);
             
-            //ItemSimilarity<Long> sim2 = ItemSimilarities.vectorCosine(trainData, true);
-            //ItemNeighborhood<Long> neighborhood = ItemNeighborhoods.cached(ItemNeighborhoods.topK(sim, k));
-
             return new ItemNeighborhoodRecommender<>(trainData, neighborhood, q);
         });
         
