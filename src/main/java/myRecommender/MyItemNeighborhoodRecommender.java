@@ -24,7 +24,7 @@ import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
  * C. Desrosiers, G. Karypis. A comprehensive survey of neighborhood-based 
  * recommendation methods. Recommender Systems Handbook.
  *
- * @author Saúl Vargas (saul.vargas@uam.es)
+ * @author Alejandro Gil
  *
  * @param <U> type of the users
  * @param <I> type of the items
