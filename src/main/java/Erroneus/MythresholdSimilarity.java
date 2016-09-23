@@ -1,4 +1,4 @@
-package myRecommender;
+package Erroneus;
 
 import static java.lang.Math.pow;
 

@@ -1,4 +1,4 @@
-package myRecommender;
+package Erroneus;
 
 import es.uam.eps.ir.ranksys.nn.user.neighborhood.UserNeighborhood;
 import es.uam.eps.ir.ranksys.nn.user.sim.UserSimilarity;
