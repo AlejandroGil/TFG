@@ -41,6 +41,8 @@ import es.uam.eps.ir.ranksys.rec.fast.basic.RandomRecommender;
 import es.uam.eps.ir.ranksys.rec.runner.RecommenderRunner;
 import es.uam.eps.ir.ranksys.rec.runner.fast.FastFilterRecommenderRunner;
 import es.uam.eps.ir.ranksys.rec.runner.fast.FastFilters;
+import myRecommender.ThresholdSimilarity;
+import myRecommender.ThresholdUserSimilarity;
 
 /**
  * Example main of recommendations.
@@ -94,6 +96,18 @@ public class RankSysTest {
             /*With Threshold*/
             //ThresholdUserNeighborhood<Long> neighborhood = new ThresholdUserNeighborhood<>(sim, 0.3);
 
+            return new UserNeighborhoodRecommender<>(trainData, neighborhood, q);
+        });
+
+        // user-based nearest neighbors wih threshold similarity
+        recMap.put("ub_simth", () -> {
+            double alpha = 0.5;
+            int k = 100;
+            int q = 1;
+
+            UserSimilarity<Long> sim = new ThresholdUserSimilarity<>(trainData, new VectorCosineUserSimilarity<>(trainData, alpha, true), 0.3, 1.0);
+            UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
+            
             return new UserNeighborhoodRecommender<>(trainData, neighborhood, q);
         });
 
