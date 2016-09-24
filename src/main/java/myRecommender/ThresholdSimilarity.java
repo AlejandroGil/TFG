@@ -4,11 +4,7 @@ import java.util.function.IntToDoubleFunction;
 import java.util.stream.Stream;
 import org.ranksys.core.util.tuples.Tuple2id;
 
-import es.uam.eps.ir.ranksys.fast.preference.FastPreferenceData;
-import es.uam.eps.ir.ranksys.fast.preference.IdxPref;
 import es.uam.eps.ir.ranksys.nn.sim.Similarity;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 
 public class ThresholdSimilarity implements Similarity{
 	
