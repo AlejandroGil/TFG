@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 import org.ranksys.core.util.tuples.Tuple2id;
 
 /**
- * Threshold neighborhood. Items with a similarity betwwen thresholds are kept
+ * Threshold neighborhood. Items with a similarity between thresholds are kept
  * as neighbors.
  *
  * @author Alejandro Gil 
