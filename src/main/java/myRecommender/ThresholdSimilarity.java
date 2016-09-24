@@ -15,11 +15,8 @@ public class ThresholdSimilarity implements Similarity{
 	private double lowerThreshold;
 	private double higherThreshold;
 	protected final Similarity sim;
-	private FastPreferenceData<?, ?> data;
 	
-	public ThresholdSimilarity(FastPreferenceData<?, ?> data, Similarity sim, double lowerThreshold, double higherThreshold) {
-
-		this.data = data;
+	public ThresholdSimilarity(Similarity sim, double lowerThreshold, double higherThreshold) {
 		this.sim = sim;
 		this.lowerThreshold = lowerThreshold;
 		this.higherThreshold = higherThreshold;
@@ -28,30 +25,22 @@ public class ThresholdSimilarity implements Similarity{
 	
 	@Override
 	public Stream<Tuple2id> similarElems(int idx) {
-		return sim.similarElems(idx);
+		return sim.similarElems(idx).filter(e -> checkSimilarity(e.v2));
 	}
 
 	@Override
 	public IntToDoubleFunction similarity(int idx) {
-		
-		IntSet set = new IntOpenHashSet();
-        data.getUidxPreferences(idx).map(IdxPref::v1).forEach(set::add);
-
         return idx2 -> {
-            int product = (int) data.getUidxPreferences(idx2)
-                    .map(IdxPref::v1)
-                    .filter(set::contains)
-                    .count();
+        	double s = sim.similarity(idx, idx2);
 
-            if (checkThresHold(product, lowerThreshold, higherThreshold))
-            	return product;
+            if (checkSimilarity(s))
+            	return s;
             return 0.0;
         };
 	}
 	
-	private boolean checkThresHold(double sim, double lowerThreshold, double higherThreshold){
-		
-		return (sim > lowerThreshold && sim < higherThreshold);
+	private boolean checkSimilarity(double sim){		
+		return (sim > lowerThreshold && sim <= higherThreshold);
 	}
 	
 }
