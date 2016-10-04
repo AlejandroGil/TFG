@@ -19,7 +19,7 @@ import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 
-public class PearsonCorrelationSimilarity implements Similarity {
+public abstract class Pearson implements Similarity {
 
 
 	private FastPreferenceData<?, ?> data;
@@ -38,7 +38,7 @@ public class PearsonCorrelationSimilarity implements Similarity {
     /*Map containing the ratings of the users to calculate means and deviations*/
     protected Map<Integer, Stats> stats;
 
-	public PearsonCorrelationSimilarity(FastPreferenceData<?, ?> data, boolean dense) {
+	public Pearson(FastPreferenceData<?, ?> data, boolean dense) {
 
         this.data = data;
         this.dense = dense;
@@ -96,9 +96,6 @@ public class PearsonCorrelationSimilarity implements Similarity {
         };
 	}
 
-	private double sim(double product, double norm2A, double norm2B){	
-		return product / Math.sqrt(norm2A * norm2B);
-	}
 
 	@Override
 	public Stream<Tuple2id> similarElems(int idx1) {
@@ -232,4 +229,7 @@ public class PearsonCorrelationSimilarity implements Similarity {
 
         return productMap;
     }
+    
+    protected abstract double sim(double product, double norm2A, double norm2B);
+
 }

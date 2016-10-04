@@ -42,6 +42,8 @@ import es.uam.eps.ir.ranksys.rec.fast.basic.RandomRecommender;
 import es.uam.eps.ir.ranksys.rec.runner.RecommenderRunner;
 import es.uam.eps.ir.ranksys.rec.runner.fast.FastFilterRecommenderRunner;
 import es.uam.eps.ir.ranksys.rec.runner.fast.FastFilters;
+import myRecommender.PearsonSimilarity;
+import myRecommender.PearsonUserSimilarity;
 import myRecommender.ThresholdUserSimilarity;
 
 /**
@@ -111,6 +113,19 @@ public class RankSysTest {
             return new UserNeighborhoodRecommender<>(trainData, neighborhood, q);
         });
 
+     // user-based nearest neighbors wih Pearson similarity
+        recMap.put("ub_simPC", () -> {
+            double alpha = 0.5;
+            int k = 100;
+            int q = 1;
+
+            UserSimilarity<Long> sim = new PearsonUserSimilarity<>(trainData, alpha, true);
+            UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
+            
+            return new UserNeighborhoodRecommender<>(trainData, neighborhood, q);
+        });
+
+        
         // item-based nearest neighbors
         recMap.put("ib", () -> {
             double alpha = 0.5;

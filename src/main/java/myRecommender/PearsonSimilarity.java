@@ -1,0 +1,26 @@
+package myRecommender;
+
+import es.uam.eps.ir.ranksys.fast.preference.FastPreferenceData;
+
+public class PearsonSimilarity extends Pearson {
+
+    private final double alpha;
+
+    /**
+     * Constructor.
+     *
+     * @param data preference data
+     * @param alpha asymmetry of the similarity, set to 0.5 for symmetry
+     * @param dense true for array-based calculations, false to map-based
+     */
+    public PearsonSimilarity(FastPreferenceData<?, ?> data, double alpha, boolean dense) {
+        super(data, dense);
+        this.alpha = alpha;
+    }
+
+    @Override
+    protected double sim(double product, double norm2A, double norm2B) {
+    	return product / Math.sqrt(norm2A * norm2B);
+    }
+
+}
