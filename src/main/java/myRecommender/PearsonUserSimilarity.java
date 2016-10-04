@@ -19,8 +19,8 @@ public class PearsonUserSimilarity<U> extends UserSimilarity<U> {
      * @param alpha asymmetry factor, set to 0.5 to standard cosine.
      * @param dense true for array-based calculations, false to map-based
      */
-    public PearsonUserSimilarity(FastPreferenceData<U, ?> data, double alpha, boolean dense) {
-        super(data, new PearsonSimilarity(data, alpha, dense));
+    public PearsonUserSimilarity(FastPreferenceData<U, ?> data, boolean dense) {
+        super(data, new PearsonSimilarity(data, dense));
     }
     
 }
