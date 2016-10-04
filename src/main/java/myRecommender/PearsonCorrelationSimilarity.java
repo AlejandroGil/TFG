@@ -87,11 +87,16 @@ public class PearsonCorrelationSimilarity implements Similarity {
 
         return idx2 -> {
             double prod = data.getUidxPreferences(idx2)
-                    .mapToDouble(iv -> (map.get(iv.v1) - stats.get(iv.v1).getMean()) * (iv.v2 - stats.get().getMean()))
+                    .mapToDouble(iv -> (map.get(iv.v1) - stats.get(idx).getMean()) * (iv.v2 - stats.get(idx2).getMean()))
                     .sum();
 
             return sim(prod, n2a, norm2Map.get(idx2));
         };
+	}
+
+	private double sim(double product, double norm2A, double norm2B){
+		
+		return product / Math.sqrt(norm2A * norm2B);
 	}
 
 	@Override
