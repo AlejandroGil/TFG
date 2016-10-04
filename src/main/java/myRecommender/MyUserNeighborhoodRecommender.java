@@ -54,6 +54,7 @@ public class MyUserNeighborhoodRecommender<U, I> extends FastRankingRecommender<
      */
     protected final int q;
     
+    /*Map containing the ratings og the users to calculate means and deviations*/
     protected Map<Integer, Stats> stats;
     protected boolean normalize;
     private double C;
