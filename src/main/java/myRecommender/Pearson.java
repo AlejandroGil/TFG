@@ -166,7 +166,7 @@ public abstract class Pearson implements Similarity {
 
         data.getUidxPreferences(idx1).forEach(ip -> {
             data.getIidxPreferences(ip.v1).forEach(up -> {
-                productMap.addTo(up.v1, ip.v2 * up.v2);
+                productMap.addTo(up.v1, (ip.v2 - stats.get(idx1).getMean()) * (up.v2 - stats.get(up.v1).getMean()));
             });
         });
 
@@ -180,7 +180,7 @@ public abstract class Pearson implements Similarity {
 
         data.getUidxPreferences(idx1).forEach(ip -> {
             data.getIidxPreferences(ip.v1).forEach(up -> {
-                productMap[up.v1] += ip.v2 * up.v2;
+                productMap[up.v1] += (ip.v2 - stats.get(idx1).getMean()) * (up.v2 - stats.get(up.v1).getMean());
             });
         });
 
@@ -200,8 +200,9 @@ public abstract class Pearson implements Similarity {
             double iv = ivs.nextDouble();
             IntIterator vidxs = data.getIidxUidxs(iidx);
             DoubleIterator vvs = data.getIidxVs(iidx);
+            int next = vidxs.nextInt();
             while (vidxs.hasNext()) {
-                productMap.addTo(vidxs.nextInt(), iv * vvs.nextDouble());
+                productMap.addTo(next, (iv - stats.get(uidx).getMean()) * (vvs.nextDouble() - stats.get(next).getMean()));
             }
         }
 
@@ -220,8 +221,10 @@ public abstract class Pearson implements Similarity {
             double iv = ivs.nextDouble();
             IntIterator vidxs = data.getIidxUidxs(iidx);
             DoubleIterator vvs = data.getIidxVs(iidx);
+            
+            int next = vidxs.nextInt();
             while (vidxs.hasNext()) {
-                productMap[vidxs.nextInt()] += iv * vvs.nextDouble();
+                productMap[next] += (iv - stats.get(uidx).getMean()) * (vvs.nextDouble() - stats.get(next).getMean());
             }
         }
 
