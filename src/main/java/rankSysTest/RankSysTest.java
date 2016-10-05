@@ -115,11 +115,11 @@ public class RankSysTest {
 
      // user-based nearest neighbors wih Pearson similarity
         recMap.put("ub_simPC", () -> {
-            double alpha = 0.5;
             int k = 100;
             int q = 1;
 
             UserSimilarity<Long> sim = new PearsonUserSimilarity<>(trainData, true);
+            System.out.println(sim);
             UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
             
             return new UserNeighborhoodRecommender<>(trainData, neighborhood, q);
