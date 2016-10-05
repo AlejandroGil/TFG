@@ -18,7 +18,6 @@ import org.ranksys.formats.preference.SimpleRatingPreferencesReader;
 import org.ranksys.formats.rec.RecommendationFormat;
 import org.ranksys.formats.rec.SimpleRecommendationFormat;
 
-import es.uam.eps.ir.ranksys.core.Recommendation;
 import es.uam.eps.ir.ranksys.fast.index.FastItemIndex;
 import es.uam.eps.ir.ranksys.fast.index.FastUserIndex;
 import es.uam.eps.ir.ranksys.fast.index.SimpleFastItemIndex;
@@ -42,7 +41,6 @@ import es.uam.eps.ir.ranksys.rec.fast.basic.RandomRecommender;
 import es.uam.eps.ir.ranksys.rec.runner.RecommenderRunner;
 import es.uam.eps.ir.ranksys.rec.runner.fast.FastFilterRecommenderRunner;
 import es.uam.eps.ir.ranksys.rec.runner.fast.FastFilters;
-import myRecommender.PearsonSimilarity;
 import myRecommender.PearsonUserSimilarity;
 import myRecommender.ThresholdUserSimilarity;
 
@@ -119,7 +117,6 @@ public class RankSysTest {
             int q = 1;
 
             UserSimilarity<Long> sim = new PearsonUserSimilarity<>(trainData, true);
-            System.out.println(sim);
             UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
             
             return new UserNeighborhoodRecommender<>(trainData, neighborhood, q);

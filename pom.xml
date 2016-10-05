@@ -33,10 +33,10 @@
    </dependency>
 
   	<dependency>
-    <groupId>org.ranksys</groupId>
-    <artifactId>RankSys</artifactId>
-    <version>0.4.3</version>
-</dependency>
+    	<groupId>org.ranksys</groupId>
+    	<artifactId>RankSys</artifactId>
+    	<version>0.4.3</version>
+	</dependency>
   	
   </dependencies>
   
