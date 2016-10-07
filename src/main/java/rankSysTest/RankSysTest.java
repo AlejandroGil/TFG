@@ -116,7 +116,7 @@ public class RankSysTest {
             int k = 100;
             int q = 1;
 
-            UserSimilarity<Long> sim = new PearsonUserSimilarity<>(trainData, true);
+            UserSimilarity<Long> sim = new PearsonUserSimilarity<>(trainData, true, -1.0);
             UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
             
             return new UserNeighborhoodRecommender<>(trainData, neighborhood, q);

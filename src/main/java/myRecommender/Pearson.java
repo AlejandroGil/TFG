@@ -35,13 +35,16 @@ public abstract class Pearson implements Similarity {
      */
     protected final double[] norm2Array;
     
+    private double threshold;
+    
     /*Map containing the ratings of the users to calculate means and deviations*/
     protected Map<Integer, Stats> stats;
 
-	public Pearson(FastPreferenceData<?, ?> data, boolean dense) {
+	public Pearson(FastPreferenceData<?, ?> data, boolean dense, double threshold) {
 
         this.data = data;
         this.dense = dense;
+        this.threshold = threshold;
         
         stats = new HashMap<>();
         data.getAllUidx().forEach(uIndex -> {
@@ -88,7 +91,7 @@ public abstract class Pearson implements Similarity {
         double n2a = norm2Map.get(idx);
 
         return idx2 -> {
-            double prod = data.getUidxPreferences(idx2)
+            double prod = data.getUidxPreferences(idx2).filter(p -> map.containsKey(p.v1))
                     .mapToDouble(iv -> (map.get(iv.v1) - stats.get(idx).getMean()) * (iv.v2 - stats.get(idx2).getMean()))
                     .sum();
 
@@ -106,12 +109,13 @@ public abstract class Pearson implements Similarity {
 
                 double[] productMap = getFasterProductArray(idx1);
                 return range(0, productMap.length)
-                        .filter(i -> productMap[i] != 0.0)
+                        .filter(i -> productMap[i] > threshold)
                         .mapToObj(i -> tuple(i, sim(productMap[i], n2a, norm2Array[i])));
             } else {
                 double n2a = norm2Map.get(idx1);
 
                 return getFasterProductMap(idx1).int2DoubleEntrySet().stream()
+                		.filter(e->e.getValue()> threshold)
                         .map(e -> {
                             int idx2 = e.getIntKey();
                             double coo = e.getDoubleValue();
@@ -125,12 +129,13 @@ public abstract class Pearson implements Similarity {
 
                 double[] productMap = getProductArray(idx1);
                 return range(0, productMap.length)
-                        .filter(i -> productMap[i] != 0.0)
+                        .filter(i -> productMap[i] > threshold)
                         .mapToObj(i -> tuple(i, sim(productMap[i], n2a, norm2Array[i])));
             } else {
                 double n2a = norm2Map.get(idx1);
 
                 return getProductMap(idx1).int2DoubleEntrySet().stream()
+                		.filter(e->e.getValue()> threshold)
                         .map(e -> {
                             int idx2 = e.getIntKey();
                             double coo = e.getDoubleValue();

@@ -11,8 +11,8 @@ public class PearsonSimilarity extends Pearson {
      * @param alpha asymmetry of the similarity, set to 0.5 for symmetry
      * @param dense true for array-based calculations, false to map-based
      */
-    public PearsonSimilarity(FastPreferenceData<?, ?> data, boolean dense) {
-        super(data, dense);
+    public PearsonSimilarity(FastPreferenceData<?, ?> data, boolean dense, double threshold) {
+        super(data, dense, threshold);
     }
 
     @Override
