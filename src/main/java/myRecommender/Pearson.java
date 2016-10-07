@@ -88,14 +88,29 @@ public abstract class Pearson implements Similarity {
         Int2DoubleOpenHashMap map = new Int2DoubleOpenHashMap();
         data.getUidxPreferences(idx).forEach(iv -> map.put(iv.v1, iv.v2));
 
-        double n2a = norm2Map.get(idx);
+        final double n2a = (dense ? norm2Array[idx] : norm2Map.get(idx));
 
         return idx2 -> {
+            Int2DoubleOpenHashMap tempMap = new Int2DoubleOpenHashMap();
+            tempMap.defaultReturnValue(0.0);
             double prod = data.getUidxPreferences(idx2).filter(p -> map.containsKey(p.v1))
-                    .mapToDouble(iv -> (map.get(iv.v1) - stats.get(idx).getMean()) * (iv.v2 - stats.get(idx2).getMean()))
+                    .mapToDouble(iv -> {
+                    	double a = (map.get(iv.v1) - stats.get(idx).getMean());
+                    	double b = (iv.v2 - stats.get(idx2).getMean());
+                    	tempMap.addTo(idx, a*a);
+                    	tempMap.addTo(idx2, b*b);
+                    	System.out.println(tempMap);
+                    	return a * b;
+                    })
                     .sum();
 
-            return sim(prod, n2a, norm2Map.get(idx2));
+            double n2a1 = n2a;
+            double n2a2 = (dense ? norm2Array[idx2] : norm2Map.get(idx2));
+            if(true){
+            	n2a1 = tempMap.get(idx);
+            	n2a2 = tempMap.get(idx2);
+            }
+            return sim(prod, n2a1, n2a2);
         };
 	}
 
@@ -110,12 +125,20 @@ public abstract class Pearson implements Similarity {
                 double[] productMap = getFasterProductArray(idx1);
                 return range(0, productMap.length)
                         .filter(i -> productMap[i] > threshold)
-                        .mapToObj(i -> tuple(i, sim(productMap[i], n2a, norm2Array[i])));
+                        .mapToObj(i -> {
+                        	double n2a1 = n2a;
+                        	double n2a2 = norm2Array[i];
+	                        if(true){
+	                        	Int2DoubleMap map = getNorm(idx1, i);
+	                        	n2a1 = map.get(idx1);
+	                        	n2a2 = map.get(i);
+	                        }
+	                        return tuple(i, sim(productMap[i], n2a1, n2a2));});
             } else {
                 double n2a = norm2Map.get(idx1);
 
                 return getFasterProductMap(idx1).int2DoubleEntrySet().stream()
-                		.filter(e->e.getValue()> threshold)
+                		.filter(e->e.getValue() > threshold)
                         .map(e -> {
                             int idx2 = e.getIntKey();
                             double coo = e.getDoubleValue();
@@ -135,7 +158,7 @@ public abstract class Pearson implements Similarity {
                 double n2a = norm2Map.get(idx1);
 
                 return getProductMap(idx1).int2DoubleEntrySet().stream()
-                		.filter(e->e.getValue()> threshold)
+                		.filter(e->e.getValue() > threshold)
                         .map(e -> {
                             int idx2 = e.getIntKey();
                             double coo = e.getDoubleValue();
@@ -163,6 +186,23 @@ public abstract class Pearson implements Similarity {
                 .mapToDouble(IdxPref::v2)
                 .map(x -> Math.pow(x - stats.get(idx).getMean(), 2))
                 .sum();
+    }
+	
+	private Int2DoubleMap getNorm(int idx1, int idx2) {
+        Int2DoubleOpenHashMap map = new Int2DoubleOpenHashMap();
+        data.getUidxPreferences(idx1).forEach(iv -> map.put(iv.v1, iv.v2));
+
+            Int2DoubleOpenHashMap tempMap = new Int2DoubleOpenHashMap();
+            tempMap.defaultReturnValue(0.0);
+            
+            data.getUidxPreferences(idx2).filter(p -> map.containsKey(p.v1))
+                    .forEach(iv -> {
+                    	double a = (map.get(iv.v1) - stats.get(idx1).getMean());
+                    	double b = (iv.v2 - stats.get(idx2).getMean());
+                    	tempMap.addTo(idx1, a*a);
+                    	tempMap.addTo(idx2, b*b);
+                    });
+            return tempMap;
     }
 	
 	private Int2DoubleMap getProductMap(int idx1) {

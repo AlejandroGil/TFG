@@ -57,7 +57,7 @@ public class RankSysTest {
 
 		String userPath = "src/main/resources/usersPC.txt";
         String itemPath = "src/main/resources/itemsPC.txt";
-        String trainDataPath = "src/main/resources/pc.base";
+        String trainDataPath = "src/main/resources/pc.data";
         String testDataPath = "src/main/resources/pc.test";
 
         /*Loading user and item indexes ("0", "1", "2"... etc)*/
@@ -116,8 +116,12 @@ public class RankSysTest {
             int k = 100;
             int q = 1;
 
-            UserSimilarity<Long> sim = new PearsonUserSimilarity<>(trainData, true, -1.0);
+            UserSimilarity<Long> sim = new PearsonUserSimilarity<>(trainData, false, -1.0);
             UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
+            
+            trainData.getUidxPreferences(0).forEach(p->System.out.println("0,"+p.v1+","+p.v2));
+            trainData.getUidxPreferences(1).forEach(p->System.out.println("1,"+p.v1+","+p.v2));
+            System.out.println(sim.similarity(0, 1));
             
             return new UserNeighborhoodRecommender<>(trainData, neighborhood, q);
         });
