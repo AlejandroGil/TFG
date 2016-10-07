@@ -46,8 +46,10 @@ public class PearsonTest {
 	        int k = 100;
 	        int q = 1;
 	
-	        UserSimilarity<Long> sim = new PearsonUserSimilarity<>(trainData, true);
+	        UserSimilarity<Long> sim = new PearsonUserSimilarity<>(trainData, true, -1.0);
 	        UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
+	        
+	        System.out.println(sim.similarity(0, 1));
 	        
 	        return new UserNeighborhoodRecommender<>(trainData, neighborhood, q);
 	    });
