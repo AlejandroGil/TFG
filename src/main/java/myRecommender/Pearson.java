@@ -39,12 +39,14 @@ public abstract class Pearson implements Similarity {
     
     /*Map containing the ratings of the users to calculate means and deviations*/
     protected Map<Integer, Stats> stats;
+	private boolean commonNorm;
 
-	public Pearson(FastPreferenceData<?, ?> data, boolean dense, double threshold) {
+	public Pearson(FastPreferenceData<?, ?> data, boolean dense, double threshold, boolean commonNorm) {
 
         this.data = data;
         this.dense = dense;
         this.threshold = threshold;
+        this.commonNorm = commonNorm;
         
         stats = new HashMap<>();
         data.getAllUidx().forEach(uIndex -> {
@@ -106,7 +108,7 @@ public abstract class Pearson implements Similarity {
 
             double n2a1 = n2a;
             double n2a2 = (dense ? norm2Array[idx2] : norm2Map.get(idx2));
-            if(true){
+            if(commonNorm){
             	n2a1 = tempMap.get(idx);
             	n2a2 = tempMap.get(idx2);
             }
@@ -128,7 +130,7 @@ public abstract class Pearson implements Similarity {
                         .mapToObj(i -> {
                         	double n2a1 = n2a;
                         	double n2a2 = norm2Array[i];
-	                        if(true){
+	                        if(commonNorm){
 	                        	Int2DoubleMap map = getNorm(idx1, i);
 	                        	n2a1 = map.get(idx1);
 	                        	n2a2 = map.get(i);
@@ -140,10 +142,17 @@ public abstract class Pearson implements Similarity {
                 return getFasterProductMap(idx1).int2DoubleEntrySet().stream()
                 		.filter(e->e.getValue() > threshold)
                         .map(e -> {
+                        	double n2a1 = n2a;
+                        	double n2a2 = e.getValue();
+                        	if(commonNorm){
+                        		
+                        		Int2DoubleMap map = getNorm(idx1, e.getKey());
+	                        	n2a1 = map.get(idx1);
+	                        	n2a2 = map.get(e.getKey());
+                        	}
                             int idx2 = e.getIntKey();
                             double coo = e.getDoubleValue();
-                            double n2b = norm2Map.get(idx2);
-                            return tuple(idx2, sim(coo, n2a, n2b));
+                            return tuple(idx2, sim(coo, n2a1, n2a2));
                         });
             }
         } else {
@@ -153,21 +162,35 @@ public abstract class Pearson implements Similarity {
                 double[] productMap = getProductArray(idx1);
                 return range(0, productMap.length)
                         .filter(i -> productMap[i] > threshold)
-                        .mapToObj(i -> tuple(i, sim(productMap[i], n2a, norm2Array[i])));
+                        .mapToObj(i -> {
+                        	double n2a1 = n2a;
+                        	double n2a2 = norm2Array[i];
+                        	if(commonNorm){
+	                        	Int2DoubleMap map = getNorm(idx1, i);
+	                        	n2a1 = map.get(idx1);
+	                        	n2a2 = map.get(i);
+	                        }
+                        return tuple(i, sim(productMap[i], n2a1, n2a2));});
             } else {
                 double n2a = norm2Map.get(idx1);
 
                 return getProductMap(idx1).int2DoubleEntrySet().stream()
                 		.filter(e->e.getValue() > threshold)
-                        .map(e -> {
+                		.map(e -> {
+                        	double n2a1 = n2a;
+                        	double n2a2 = e.getValue();
+                        	if(commonNorm){
+                        		
+                        		Int2DoubleMap map = getNorm(idx1, e.getKey());
+	                        	n2a1 = map.get(idx1);
+	                        	n2a2 = map.get(e.getKey());
+                        	}
                             int idx2 = e.getIntKey();
                             double coo = e.getDoubleValue();
-                            double n2b = norm2Map.get(idx2);
-                            return tuple(idx2, sim(coo, n2a, n2b));
+                            return tuple(idx2, sim(coo, n2a1, n2a2));
                         });
             }
         }
-
 	}
 
 	

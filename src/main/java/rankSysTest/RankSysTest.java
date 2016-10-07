@@ -116,7 +116,7 @@ public class RankSysTest {
             int k = 100;
             int q = 1;
 
-            UserSimilarity<Long> sim = new PearsonUserSimilarity<>(trainData, false, -1.0);
+            UserSimilarity<Long> sim = new PearsonUserSimilarity<>(trainData, false, -1.0, false);
             UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
             
             trainData.getUidxPreferences(0).forEach(p->System.out.println("0,"+p.v1+","+p.v2));
