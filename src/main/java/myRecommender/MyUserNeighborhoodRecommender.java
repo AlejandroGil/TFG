@@ -70,6 +70,9 @@ public class MyUserNeighborhoodRecommender<U, I> extends FastRankingRecommender<
      * @param data preference data
      * @param neighborhood user neighborhood
      * @param q exponent of the similarity
+     * @param sim similarity of users
+     * @param tr type of transformation (standard, mean centeringo or z-score)
+     * @param normalize choose whether the ratings are normalized or not
      */
     public MyUserNeighborhoodRecommender(FastPreferenceData<U, I> data, UserNeighborhood<U> neighborhood, int q, UserSimilarity<U> sim, TRANSFORM tr, boolean normalize) {
         super(data, data);
@@ -102,23 +105,20 @@ public class MyUserNeighborhoodRecommender<U, I> extends FastRankingRecommender<
     public Int2DoubleMap getScoresMap(int uidx) {
         
         scoresMap.defaultReturnValue(0.0);
-
         transform(uidx, t);
-        
         C = 0.0;
-        
         operateTransformRating(uidx);
        
         final double b = normalize ? t2 / C : t2;
 
-        Int2DoubleOpenHashMap scoresMap2 = new Int2DoubleOpenHashMap();
-        scoresMap2.defaultReturnValue(0.0);
-        scoresMap.forEach((k,v) -> {
-        	double s = t1 + b * v;
-        	scoresMap2.addTo(k, s);
+        neighborhood.getNeighbors(uidx).forEach(vs -> {
+        	data.getUidxPreferences(vs.v1).forEach(iv -> {
+        		double s = t1 + b * iv.v2;
+        		scoresMap.addTo(iv.v1, s);
+        	});
         });
 
-        return scoresMap2;
+        return scoresMap;
     }
     
     private void transform(int uidx, TRANSFORM t){
@@ -154,12 +154,14 @@ public class MyUserNeighborhoodRecommender<U, I> extends FastRankingRecommender<
     private void operateTransformRating(int uidx){
     	
     	neighborhood.getNeighbors(uidx).forEach(vs -> {
+
         	double sim = similarity.similarity(uidx, vs.v1);
         	
             double w = pow(sim, q);
             C += Math.abs(w);
             
             data.getUidxPreferences(vs.v1).forEach(iv -> {
+            	
             	double t3 = 0.0;
             	switch (t) {
     			case STD:

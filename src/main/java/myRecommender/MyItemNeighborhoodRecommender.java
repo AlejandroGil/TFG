@@ -71,6 +71,9 @@ public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<
      * @param data preference data
      * @param neighborhood user neighborhood
      * @param q exponent of the similarity
+     * @param sim similarity of users
+     * @param tr set the variation on calculation (standard, mean centering or z-score)
+     * @param normalize choose whether the ratings are normalized or not
      */
     public MyItemNeighborhoodRecommender(FastPreferenceData<U, I> data, ItemNeighborhood<U> neighborhood, int q, ItemSimilarity<U> sim, TRANSFORM tr, boolean normalize) {
         super(data, data);
@@ -90,7 +93,6 @@ public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<
                 s.accept(p.v2);
             });
         });
-        
     }
 
     /**
@@ -136,8 +138,7 @@ public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<
 			t1 = 0.0;
 			break;
 		}
-        
-        
+
     	switch (t) {
 		case STD:
 		case MC:
