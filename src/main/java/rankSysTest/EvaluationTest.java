@@ -51,7 +51,7 @@ import myRecommender.ThresholdUserSimilarity;
  * @author Pablo Castells (pablo.castells@uam.es)
  */
 
-public class RankSysTest {
+public class EvaluationTest {
 
 	public static void main(String[] args) throws IOException {
 
