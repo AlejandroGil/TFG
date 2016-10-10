@@ -57,11 +57,6 @@ public class MyUserNeighborhoodRecommender<U, I> extends FastRankingRecommender<
     /*Map containing the ratings og the users to calculate means and deviations*/
     protected Map<Integer, Stats> stats;
     protected boolean normalize;
-    private double C;
-    private double t1 = 0.0;
-    private double t2 = 0.0;
-    private Int2DoubleOpenHashMap scoresMap = new Int2DoubleOpenHashMap();
-    private Int2DoubleOpenHashMap count = new Int2DoubleOpenHashMap();
 
 
     /**
@@ -103,26 +98,14 @@ public class MyUserNeighborhoodRecommender<U, I> extends FastRankingRecommender<
      */
     @Override
     public Int2DoubleMap getScoresMap(int uidx) {
-        
+        Int2DoubleOpenHashMap cMap = new Int2DoubleOpenHashMap();
+        cMap.defaultReturnValue(0.0);
+        Int2DoubleOpenHashMap scoresMap = new Int2DoubleOpenHashMap();
         scoresMap.defaultReturnValue(0.0);
-        transform(uidx, t);
-        C = 0.0;
-        operateTransformRating(uidx);
-       
-        final double b = normalize ? t2 / C : t2;
+        Int2DoubleOpenHashMap count = new Int2DoubleOpenHashMap();
+        count.defaultReturnValue(0.0);
 
-        Int2DoubleOpenHashMap scoresMap2 = new Int2DoubleOpenHashMap();
-        scoresMap2.defaultReturnValue(0.0);
-        scoresMap.forEach((k,v) -> {
-        	double s = t1 + b * v;
-        	scoresMap2.addTo(k, s);
-        });
-
-        return scoresMap2;
-    }
-    
-    private void transform(int uidx, TRANSFORM t){
-    	
+        double t1 = 0.0;
     	switch (t) {
 		case STD:
 			break;
@@ -136,6 +119,7 @@ public class MyUserNeighborhoodRecommender<U, I> extends FastRankingRecommender<
 			break;
 		}
         
+        double t2 = 1.0;
     	switch (t) {
 		case STD:
 		case MC:
@@ -148,16 +132,13 @@ public class MyUserNeighborhoodRecommender<U, I> extends FastRankingRecommender<
 		default:
 			break;
 		}
-    }
-    
-    private void operateTransformRating(int uidx){
-    	
+        
     	neighborhood.getNeighbors(uidx).forEach(vs -> {
 
         	double sim = similarity.similarity(uidx, vs.v1);
         	
             double w = pow(sim, q);
-            C += Math.abs(w);
+            cMap.addTo(1, Math.abs(w));
             
             data.getUidxPreferences(vs.v1).forEach(iv -> {
             	
@@ -181,5 +162,17 @@ public class MyUserNeighborhoodRecommender<U, I> extends FastRankingRecommender<
                 count.addTo(iv.v1, 1);
             });
         });
-    }
+       
+        final double b = normalize ? t2 / cMap.get(1) : t2;
+        final double a = t1;
+
+        Int2DoubleOpenHashMap scoresMap2 = new Int2DoubleOpenHashMap();
+        scoresMap2.defaultReturnValue(0.0);
+        scoresMap.forEach((k,v) -> {
+        	double s = a + b * v;
+        	scoresMap2.addTo(k, s);
+        });
+
+        return scoresMap2;
+    }    
 }

@@ -51,14 +51,9 @@ public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<
      */
     protected final int q;
     
-    /*Map containing the ratings og the users to calculate means and deviations*/
+    /*Map containing the ratings of the users to calculate means and deviations*/
     protected Map<Integer, Stats> stats;
     protected boolean normalize;
-    private double C;
-    private double t1 = 0.0;
-    private double t2 = 0.0;
-    private Int2DoubleOpenHashMap scoresMap = new Int2DoubleOpenHashMap();
-    private Int2DoubleOpenHashMap count = new Int2DoubleOpenHashMap();
 
 
     /**
@@ -79,10 +74,10 @@ public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<
         this.t = std;
         
         stats = new HashMap<>();
-        data.getAllUidx().forEach(uIndex -> {
+        data.getAllIidx().forEach(iIndex -> {
             Stats s = new  Stats();
-            stats.put(uIndex, s);
-            data.getUidxPreferences(uIndex).forEach(p -> {
+            stats.put(iIndex, s);
+            data.getIidxPreferences(iIndex).forEach(p -> {
                 s.accept(p.v2);
             });
         });
@@ -97,135 +92,82 @@ public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<
      */
     @Override
     public Int2DoubleMap getScoresMap(int uidx) {
-        
+        Int2DoubleOpenHashMap cMap = new Int2DoubleOpenHashMap();
+        cMap.defaultReturnValue(0.0);
+        Int2DoubleOpenHashMap scoresMap = new Int2DoubleOpenHashMap();
         scoresMap.defaultReturnValue(0.0);
-
-        switch (t) {
-		case STD:
-			break;
-		case MC:
-		case Z:
-			t1 = stats.get(uidx).getMean();
-			break;
-
-		default:
-			t1 = 0.0;
-			break;
-		}
+        Int2DoubleOpenHashMap count = new Int2DoubleOpenHashMap();
+        count.defaultReturnValue(0.0);
         
-    	switch (t) {
-		case STD:
-		case MC:
-			t2 = 1.0;
-			break;
-		case Z:
-			t2 = stats.get(uidx).getStandardDeviation();
-			break;
+        data.getUidxPreferences(uidx).forEach(jp -> {
+        	int i = jp.v1;
 
-		default:
-			break;
-		}
-        
-        C = 0.0;
-        
-        neighborhood.getNeighbors(uidx).forEach(vs -> {
-        	double sim = similarity.similarity(uidx, vs.v1);
-        	
-            double w = pow(sim, q);
-            C += Math.abs(w);
-            
-            data.getUidxPreferences(vs.v1).forEach(iv -> {
+        	neighborhood.getNeighbors(i).forEach(is -> {
+            	int j = is.v1;
+            	double sim = similarity.similarity(i, j);
+            	
+                double w = pow(sim, q);
+                cMap.addTo(1, Math.abs(w));
+
             	double t3 = 0.0;
             	switch (t) {
     			case STD:
-    				t3 = iv.v2;
+    				t3 = jp.v2;
     				break;
     			case MC:
-    				t3 = iv.v2 - stats.get(vs.v1).getMean();
+    				t3 = jp.v2 - stats.get(j).getMean();
     				break;
     			case Z:
-    				t3 = (iv.v2 - stats.get(vs.v1).getMean())/stats.get(vs.v1).getStandardDeviation();
+    				t3 = (jp.v2 - stats.get(j).getMean())/stats.get(j).getStandardDeviation();
     				break;
 
     			default:
     				break;
     			}
                 double p = w * t3;
-                scoresMap.addTo(iv.v1, p);
-                count.addTo(iv.v1, 1);
+                scoresMap.addTo(j, p);
+                count.addTo(j, 1);
             });
         });
-       
-        final double b = normalize ? t2 / C : t2;
 
         Int2DoubleOpenHashMap scoresMap2 = new Int2DoubleOpenHashMap();
         scoresMap2.defaultReturnValue(0.0);
-        scoresMap.forEach((k,v) -> {
+        scoresMap.forEach((i,v) -> {
+
+            double t1 = 0.0;
+            switch (t) {
+    		case STD:
+    			break;
+    		case MC:
+    		case Z:
+    			t1 = stats.get(i).getMean();
+    			break;
+
+    		default:
+    			t1 = 0.0;
+    			break;
+    		}
+            
+            double t2 = 1.0;
+        	switch (t) {
+    		case STD:
+    		case MC:
+    			t2 = 1.0;
+    			break;
+    		case Z:
+    			t2 = stats.get(i).getStandardDeviation();
+    			break;
+
+    		default:
+    			break;
+    		}
+        	
+            final double b = normalize ? t2 / cMap.get(1) : t2;
+        	
         	double s = t1 + b * v;
-        	scoresMap2.addTo(k, s);
+        	scoresMap2.addTo(i, s);
         });
 
         return scoresMap2;
-    }
-    
-    private void transform(int uidx, TRANSFORM t){
-    	
-    	switch (t) {
-		case STD:
-			break;
-		case MC:
-		case Z:
-			t1 = stats.get(uidx).getMean();
-			break;
-
-		default:
-			t1 = 0.0;
-			break;
-		}
-        
-        
-    	switch (t) {
-		case STD:
-		case MC:
-			t2 = 1.0;
-			break;
-		case Z:
-			t2 = stats.get(uidx).getStandardDeviation();
-			break;
-
-		default:
-			break;
-		}
-    }
-    
-    private void operateTransformRating(int uidx){
-    	
-    	neighborhood.getNeighbors(uidx).forEach(vs -> {
-        	double sim = similarity.similarity(uidx, vs.v1);
-        	
-            double w = pow(sim, q);
-            C += Math.abs(w);
-            
-            data.getUidxPreferences(vs.v1).forEach(iv -> {
-            	double t3 = 0.0;
-            	switch (t) {
-    			case STD:
-    				t3 = iv.v2;
-    				break;
-    			case MC:
-    				t3 = iv.v2 - stats.get(vs.v1).getMean();
-    				break;
-    			case Z:
-    				t3 = (iv.v2 - stats.get(vs.v1).getMean())/stats.get(vs.v1).getStandardDeviation();
-    				break;
-
-    			default:
-    				break;
-    			}
-                double p = w * t3;
-                scoresMap.addTo(iv.v1, p);
-                count.addTo(iv.v1, 1);
-            });
-        });
     }
 }
