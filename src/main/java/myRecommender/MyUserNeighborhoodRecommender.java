@@ -138,6 +138,7 @@ public class MyUserNeighborhoodRecommender<U, I> extends FastRankingRecommender<
         	double sim = similarity.similarity(uidx, vs.v1);
         	
             double w = pow(sim, q);
+            /*sum of similarities (when normalizing)*/
             cMap.addTo(1, Math.abs(w));
             
             data.getUidxPreferences(vs.v1).forEach(iv -> {

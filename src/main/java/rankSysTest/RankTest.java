@@ -123,7 +123,7 @@ public class RankTest {
             UserSimilarity<Long> sim = new VectorCosineUserSimilarity<>(trainData, alpha, false);
             UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
             
-            return new MyUserNeighborhoodRecommender<>(trainData, neighborhood, q, sim, TRANSFORM.STD, true);
+            return new MyUserNeighborhoodRecommender<>(trainData, neighborhood, q, sim, TRANSFORM.STD, false);
         });
         
         recMap.put("ib_MyNeighbour", () -> {
