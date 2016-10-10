@@ -111,14 +111,14 @@ public class MyUserNeighborhoodRecommender<U, I> extends FastRankingRecommender<
        
         final double b = normalize ? t2 / C : t2;
 
-        neighborhood.getNeighbors(uidx).forEach(vs -> {
-        	data.getUidxPreferences(vs.v1).forEach(iv -> {
-        		double s = t1 + b * iv.v2;
-        		scoresMap.addTo(iv.v1, s);
-        	});
+        Int2DoubleOpenHashMap scoresMap2 = new Int2DoubleOpenHashMap();
+        scoresMap2.defaultReturnValue(0.0);
+        scoresMap.forEach((k,v) -> {
+        	double s = t1 + b * v;
+        	scoresMap2.addTo(k, s);
         });
 
-        return scoresMap;
+        return scoresMap2;
     }
     
     private void transform(int uidx, TRANSFORM t){
@@ -135,7 +135,6 @@ public class MyUserNeighborhoodRecommender<U, I> extends FastRankingRecommender<
 			t1 = 0.0;
 			break;
 		}
-        
         
     	switch (t) {
 		case STD:

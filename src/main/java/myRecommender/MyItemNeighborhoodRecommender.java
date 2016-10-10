@@ -12,6 +12,7 @@ import es.uam.eps.ir.ranksys.nn.item.sim.ItemSimilarity;
 import es.uam.eps.ir.ranksys.rec.fast.FastRankingRecommender;
 import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
+import myRecommender.MyUserNeighborhoodRecommender.TRANSFORM;
 /**
  * User-based nearest neighbors recommender.
  * 
@@ -31,12 +32,6 @@ import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
  */
 public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<U, I> {
 	
-	public static enum TRANSFORM{
-		STD,
-		MC,
-		Z
-	}
-
 	protected TRANSFORM t;
     /**
      * Preference data.
@@ -56,6 +51,7 @@ public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<
      */
     protected final int q;
     
+    /*Map containing the ratings og the users to calculate means and deviations*/
     protected Map<Integer, Stats> stats;
     protected boolean normalize;
     private double C;
@@ -71,11 +67,8 @@ public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<
      * @param data preference data
      * @param neighborhood user neighborhood
      * @param q exponent of the similarity
-     * @param sim similarity of users
-     * @param tr set the variation on calculation (standard, mean centering or z-score)
-     * @param normalize choose whether the ratings are normalized or not
      */
-    public MyItemNeighborhoodRecommender(FastPreferenceData<U, I> data, ItemNeighborhood<U> neighborhood, int q, ItemSimilarity<U> sim, TRANSFORM tr, boolean normalize) {
+    public MyItemNeighborhoodRecommender(FastPreferenceData<U, I> data, ItemNeighborhood<U> neighborhood, int q, ItemSimilarity<U> sim, TRANSFORM std, boolean normalize) {
         super(data, data);
         this.data = data;
         this.neighborhood = neighborhood;
@@ -83,7 +76,7 @@ public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<
         
         this.similarity = sim;
         this.normalize = normalize;
-        this.t = tr;
+        this.t = std;
         
         stats = new HashMap<>();
         data.getAllUidx().forEach(uIndex -> {
@@ -93,6 +86,7 @@ public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<
                 s.accept(p.v2);
             });
         });
+        
     }
 
     /**
@@ -106,11 +100,61 @@ public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<
         
         scoresMap.defaultReturnValue(0.0);
 
-        transform(uidx, t);
+        switch (t) {
+		case STD:
+			break;
+		case MC:
+		case Z:
+			t1 = stats.get(uidx).getMean();
+			break;
+
+		default:
+			t1 = 0.0;
+			break;
+		}
+        
+    	switch (t) {
+		case STD:
+		case MC:
+			t2 = 1.0;
+			break;
+		case Z:
+			t2 = stats.get(uidx).getStandardDeviation();
+			break;
+
+		default:
+			break;
+		}
         
         C = 0.0;
         
-        operateTransformRating(uidx);
+        neighborhood.getNeighbors(uidx).forEach(vs -> {
+        	double sim = similarity.similarity(uidx, vs.v1);
+        	
+            double w = pow(sim, q);
+            C += Math.abs(w);
+            
+            data.getUidxPreferences(vs.v1).forEach(iv -> {
+            	double t3 = 0.0;
+            	switch (t) {
+    			case STD:
+    				t3 = iv.v2;
+    				break;
+    			case MC:
+    				t3 = iv.v2 - stats.get(vs.v1).getMean();
+    				break;
+    			case Z:
+    				t3 = (iv.v2 - stats.get(vs.v1).getMean())/stats.get(vs.v1).getStandardDeviation();
+    				break;
+
+    			default:
+    				break;
+    			}
+                double p = w * t3;
+                scoresMap.addTo(iv.v1, p);
+                count.addTo(iv.v1, 1);
+            });
+        });
        
         final double b = normalize ? t2 / C : t2;
 
@@ -138,7 +182,8 @@ public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<
 			t1 = 0.0;
 			break;
 		}
-
+        
+        
     	switch (t) {
 		case STD:
 		case MC:
