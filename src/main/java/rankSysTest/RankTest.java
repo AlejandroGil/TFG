@@ -126,7 +126,7 @@ public class RankTest {
             return new MyUserNeighborhoodRecommender<>(trainData, neighborhood, q, sim, TRANSFORM.STD, true);
         });
         
-        recMap.put("ib_MyNeighbour", () -> {
+        /*recMap.put("ib_MyNeighbour", () -> {
             double alpha = 0.5;
             int k = 100;
             int q = 1;
@@ -135,8 +135,8 @@ public class RankTest {
             ItemNeighborhood<Long> neighborhood = new TopKItemNeighborhood<>(sim, k);
             neighborhood = new CachedItemNeighborhood<>(neighborhood);
             
-            return new MyItemNeighborhoodRecommender<Long, Long>(trainData, neighborhood, q, sim, TRANSFORM.STD, true);
-        });
+            return new MyItemNeighborhoodRecommender<Long, Long>(trainData, neighborhood, q, sim, TRANSFORM.STD, false);
+        });*/
         
 
      // user-based nearest neighbors wih Pearson similarity
