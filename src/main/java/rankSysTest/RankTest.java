@@ -35,6 +35,7 @@ import es.uam.eps.ir.ranksys.nn.user.neighborhood.TopKUserNeighborhood;
 import es.uam.eps.ir.ranksys.nn.user.neighborhood.UserNeighborhood;
 import es.uam.eps.ir.ranksys.nn.user.sim.UserSimilarity;
 import es.uam.eps.ir.ranksys.nn.user.sim.VectorCosineUserSimilarity;
+import es.uam.eps.ir.ranksys.nn.user.sim.VectorJaccardUserSimilarity;
 import es.uam.eps.ir.ranksys.rec.Recommender;
 import es.uam.eps.ir.ranksys.rec.fast.basic.PopularityRecommender;
 import es.uam.eps.ir.ranksys.rec.fast.basic.RandomRecommender;
@@ -60,8 +61,8 @@ public class RankTest {
 
 		String userPath = "src/main/resources/ml-100k/users.txt";
         String itemPath = "src/main/resources/ml-100k/items.txt";
-        String trainDataPath = "src/main/resources/ml-100k/u1.base";
-        String testDataPath = "src/main/resources/ml-100k/u1.test";
+        String trainDataPath = "src/main/resources/ml-100k/u5.base";
+        String testDataPath = "src/main/resources/ml-100k/u5.test";
 
         /*Loading user and item indexes ("0", "1", "2"... etc)*/
         FastUserIndex<Long> userIndex = SimpleFastUserIndex.load(UsersReader.read(userPath, lp));
@@ -114,6 +115,16 @@ public class RankTest {
             return new UserNeighborhoodRecommender<>(trainData, neighborhood, q);
         });
         
+        recMap.put("ub_jaccard", () -> {
+            int k = 100;
+            int q = 1;
+
+            UserSimilarity<Long> sim = new VectorJaccardUserSimilarity<>(trainData, true);
+            UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
+            
+            return new UserNeighborhoodRecommender<>(trainData, neighborhood, q);
+        });
+        
      // user-based nearest neighbors wih threshold similarity
         recMap.put("ub_MyNeighbour", () -> {
             double alpha = 0.5;
@@ -138,9 +149,25 @@ public class RankTest {
             return new MyItemNeighborhoodRecommender<Long, Long>(trainData, neighborhood, q, sim, TRANSFORM.STD, false);
         });
         
+        
+        
 
      // user-based nearest neighbors wih Pearson similarity
-        recMap.put("ub_simPC", () -> {
+        recMap.put("ub_pearson_com", () -> {
+            int k = 100;
+            int q = 1;
+
+            UserSimilarity<Long> sim = new PearsonUserSimilarity<>(trainData, false, 0, true);
+            UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
+            
+            //trainData.getUidxPreferences(0).forEach(p->System.out.println("0,"+p.v1+","+p.v2));
+            //trainData.getUidxPreferences(1).forEach(p->System.out.println("1,"+p.v1+","+p.v2));
+            //System.out.println(sim.similarity(0, 1));
+            
+            return new UserNeighborhoodRecommender<>(trainData, neighborhood, q);
+        });
+
+        recMap.put("ub_pearson_all", () -> {
             int k = 100;
             int q = 1;
 
@@ -153,7 +180,6 @@ public class RankTest {
             
             return new UserNeighborhoodRecommender<>(trainData, neighborhood, q);
         });
-
         
         // item-based nearest neighbors
         recMap.put("ib", () -> {

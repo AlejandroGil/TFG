@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2015 Information Retrieval Group at Universidad Autónoma
+ * Copyright (C) 2015 Information Retrieval Group at Universidad Autï¿½noma
  * de Madrid, http://ir.ii.uam.es
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -34,15 +34,15 @@ import es.uam.eps.ir.ranksys.metrics.rel.NoRelevanceModel;
 /**
  * Example main of metrics.
  *
- * @author Saúl Vargas (saul.vargas@uam.es)
+ * @author Saï¿½l Vargas (saul.vargas@uam.es)
  * @author Pablo Castells (pablo.castells@uam.es)
  */
 public class EvaluationTest {
 
     public static void main(String[] args) throws Exception {
-        String trainDataPath = "src/main/resources/ml-100k/u1.base";
-        String testDataPath = "src/main/resources/ml-100k/u1.test";
-        String recIn = "ub_simPC";
+        String trainDataPath = "src/main/resources/ml-100k/u5.base";
+        String testDataPath = "src/main/resources/ml-100k/u5.test";
+        String recIn = "ub";
         Double threshold = 0.0;
 
         // USER - ITEM - RATING files for train and test
