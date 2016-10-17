@@ -42,7 +42,7 @@ public class EvaluationTest {
     public static void main(String[] args) throws Exception {
         String trainDataPath = "src/main/resources/ml-100k/u5.base";
         String testDataPath = "src/main/resources/ml-100k/u5.test";
-        String recIn = "ub";
+        String recIn = "ub_MN_pearson_all";
         Double threshold = 0.0;
 
         // USER - ITEM - RATING files for train and test

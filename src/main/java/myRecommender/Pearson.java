@@ -101,7 +101,6 @@ public abstract class Pearson implements Similarity {
                     	double b = (iv.v2 - stats.get(idx2).getMean());
                     	tempMap.addTo(idx, a*a);
                     	tempMap.addTo(idx2, b*b);
-                    	System.out.println(tempMap);
                     	return a * b;
                     })
                     .sum();

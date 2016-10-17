@@ -134,7 +134,39 @@ public class RankTest {
             UserSimilarity<Long> sim = new VectorCosineUserSimilarity<>(trainData, alpha, false);
             UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
             
-            return new MyUserNeighborhoodRecommender<>(trainData, neighborhood, q, sim, TRANSFORM.STD, false);
+            return new MyUserNeighborhoodRecommender<>(trainData, neighborhood, q, sim, TRANSFORM.Z, false);
+        });
+
+        recMap.put("ub_MN_jaccard", () -> {
+            int k = 100;
+            int q = 1;
+
+            UserSimilarity<Long> sim = new VectorJaccardUserSimilarity<>(trainData, false);
+            UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
+            
+            return new MyUserNeighborhoodRecommender<>(trainData, neighborhood, q, sim, TRANSFORM.Z, false);
+        });
+        
+        recMap.put("ub_MN_pearson_com", () -> {
+        	double alpha = 0.5;
+        	int k = 100;
+            int q = 1;
+
+            UserSimilarity<Long> sim = new PearsonUserSimilarity<>(trainData, false, 0, true);
+            UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
+            
+            return new MyUserNeighborhoodRecommender<>(trainData, neighborhood, q, sim, TRANSFORM.Z, false);
+        });
+        
+        recMap.put("ub_MN_pearson_all", () -> {
+        	double alpha = 0.5;
+        	int k = 100;
+            int q = 1;
+
+            UserSimilarity<Long> sim = new PearsonUserSimilarity<>(trainData, false, 0, false);
+            UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
+            
+            return new MyUserNeighborhoodRecommender<>(trainData, neighborhood, q, sim, TRANSFORM.Z, false);
         });
         
         recMap.put("ib_MyNeighbour", () -> {
