@@ -12,18 +12,14 @@ import java.util.function.Function;
 import java.util.function.IntPredicate;
 import java.util.stream.Collectors;
 
-import org.omg.CORBA.PRIVATE_MEMBER;
 import org.ranksys.formats.index.ItemsReader;
 import org.ranksys.formats.index.UsersReader;
 import org.ranksys.formats.preference.SimpleRatingPreferencesReader;
 import org.ranksys.formats.rec.RecommendationFormat;
 import org.ranksys.formats.rec.SimpleRecommendationFormat;
 
-import es.uam.eps.ir.ranksys.core.preference.ConcatPreferenceData;
 import es.uam.eps.ir.ranksys.core.preference.PreferenceData;
 import es.uam.eps.ir.ranksys.core.preference.SimplePreferenceData;
-import es.uam.eps.ir.ranksys.diversity.sales.metrics.AggregateDiversityMetric;
-import es.uam.eps.ir.ranksys.diversity.sales.metrics.GiniIndex;
 import es.uam.eps.ir.ranksys.fast.index.FastItemIndex;
 import es.uam.eps.ir.ranksys.fast.index.FastUserIndex;
 import es.uam.eps.ir.ranksys.fast.index.SimpleFastItemIndex;
@@ -37,7 +33,6 @@ import es.uam.eps.ir.ranksys.metrics.basic.NDCG;
 import es.uam.eps.ir.ranksys.metrics.basic.Precision;
 import es.uam.eps.ir.ranksys.metrics.basic.Recall;
 import es.uam.eps.ir.ranksys.metrics.rel.BinaryRelevanceModel;
-import es.uam.eps.ir.ranksys.metrics.rel.NoRelevanceModel;
 import es.uam.eps.ir.ranksys.nn.user.neighborhood.TopKUserNeighborhood;
 import es.uam.eps.ir.ranksys.nn.user.neighborhood.UserNeighborhood;
 import es.uam.eps.ir.ranksys.nn.user.sim.UserSimilarity;
@@ -62,12 +57,11 @@ public class Experiment {
 		
 		switch (args[0]) {
 		case "split":
-			
+			//RIVAL
 			break;
 
 		case "ub":{
-			//
-			System.out.println("ub userPath itemPath trainData testData outfile sim transf norm k q [alpha]");
+			System.out.println("Parameters: ub userPath itemPath trainData testData outfile sim transf norm k q [alpha]");
 			String userPath = args[1];
 	        String itemPath = args[2];
 	        String trainDataPath = args[3];
@@ -99,8 +93,20 @@ public class Experiment {
 			case "cosine":
 	            sim = new VectorCosineUserSimilarity<>(trainData, alpha, dense);
 				break;
+			case "cosine_th_0.3":
+				sim = new ThresholdUserSimilarity<>(trainData, new VectorCosineUserSimilarity<>(trainData, alpha, dense), 0.3, 1.0);
+				break;
+			case "cosine_th_0.5":
+				sim = new ThresholdUserSimilarity<>(trainData, new VectorCosineUserSimilarity<>(trainData, alpha, dense), 0.5, 1.0);
+				break;
 			case "jaccard":
 	            sim = new VectorJaccardUserSimilarity<>(trainData, dense);
+				break;
+			case "jaccard_th_0.3":
+				sim = new ThresholdUserSimilarity<>(trainData, new VectorJaccardUserSimilarity<>(trainData, dense), 0.3, 1.0);
+				break;
+			case "jaccard_th_0.5":
+				sim = new ThresholdUserSimilarity<>(trainData, new VectorJaccardUserSimilarity<>(trainData, dense), 0.5, 1.0);
 				break;
 			case "pearson":
 				sim = new PearsonUserSimilarity<>(trainData, dense, -1.0, false);
@@ -114,13 +120,12 @@ public class Experiment {
 			case "pearsoncn_th_0":
 				sim = new ThresholdUserSimilarity<>(trainData, new PearsonSimilarity(trainData, dense, 0.0, true), 0.0, 1.0);
 				break;
-			case "cosine_th_0.3":
-			case "cosine_th_0.5":
-			case "jaccard_th_0.3":
-			case "jaccard_th_0.5":
-			case "pearson_th_0.5":
+			case "pearson_th_0.5":	
+				sim = new ThresholdUserSimilarity<>(trainData, new PearsonSimilarity(trainData, dense, 0.0, false), 0.5, 1.0);
+				break;
 			case "pearsoncn_th_0.5":
-
+				sim = new ThresholdUserSimilarity<>(trainData, new PearsonSimilarity(trainData, dense, 0.0, true), 0.5, 1.0);
+				break;
 			default:
 				break;
 			}
@@ -152,7 +157,7 @@ public class Experiment {
 			break;
 			
 		case "eval":{
-			System.out.println("eval recfile traindata testdata outfile");
+			System.out.println("Parameters: eval recfile traindata testdata outfile");
 	        String trainDataPath = args[2];
 	        String testDataPath = args[3];
 	        String recIn = args[1];
@@ -199,7 +204,7 @@ public class Experiment {
 		}
 	}
 	
-	private static void generateRecommendations(Recommender<Long, Long> rec, String outfile,
+		private static void generateRecommendations(Recommender<Long, Long> rec, String outfile,
 	        FastUserIndex<Long> userIndex, FastItemIndex<Long> itemIndex,
 	        FastPreferenceData<Long, Long> trainData, FastPreferenceData<Long, Long> testData,
 	        int maxLength) throws IOException {
