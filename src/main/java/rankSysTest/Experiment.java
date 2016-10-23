@@ -55,6 +55,26 @@ public class Experiment {
 
 	public static void main(String[] args) throws Exception {
 		
+		if (args.length == 0){
+			System.out.println("Parameters incorrect -> try split/ub/eval as first parameter");
+			System.exit(0);
+		}
+			
+		if(args[0].equals("ub"))
+			if (args.length != 12){
+				System.out.println("Parameters incorrect -> ub userPath itemPath trainData testData outfile sim transf norm k q [alpha]");
+				System.exit(0);
+			}
+		else if (args[0].equals("eval"))
+			if (args.length != 4){
+				System.out.println("Parameters incorrect -> ueval recfile traindata testdata outfile");
+				System.exit(0);
+			}
+			
+		/*else if(args[0].equals("split"))
+			if (args.length != )
+				System.out.println("Parameters incorrect -> ");*/
+		
 		switch (args[0]) {
 		case "split":
 			//RIVAL
@@ -91,7 +111,7 @@ public class Experiment {
             UserSimilarity<Long> sim = null;
             switch (simName) {
 			case "cosine":
-	            sim = new VectorCosineUserSimilarity<>(trainData, alpha, dense);
+				sim = new VectorCosineUserSimilarity<>(trainData, alpha, dense);
 				break;
 			case "cosine_th_0.3":
 				sim = new ThresholdUserSimilarity<>(trainData, new VectorCosineUserSimilarity<>(trainData, alpha, dense), 0.3, 1.0);
@@ -157,13 +177,12 @@ public class Experiment {
 			break;
 			
 		case "eval":{
-			System.out.println("Parameters: eval recfile traindata testdata outfile");
-	        String trainDataPath = args[2];
-	        String testDataPath = args[3];
+			System.out.println("Parameters: eval recfile testdata outfile");
+	        String testDataPath = args[2];
 	        String recIn = args[1];
 	        Double threshold = EVAL_THRESHOLD;
-	        String outfile = args[5];
-
+	        String outfile = args[3];
+	        
 	        // USER - ITEM - RATING files for train and test
 	        PreferenceData<Long, Long> testData = SimplePreferenceData.load(SimpleRatingPreferencesReader.get().read(testDataPath, lp, lp));
 	        // BINARY RELEVANCE
@@ -193,13 +212,17 @@ public class Experiment {
 
 	        format.getReader(recIn).readAll().forEach(rec -> sysMetrics.values().forEach(metric -> metric.add(rec)));
 	        
+	        sysMetrics.forEach((name, metric) -> System.out.println(name + "\t" + metric.evaluate()));
+	        
 	        PrintStream out = new PrintStream(new File(outfile));
 	        sysMetrics.forEach((name, metric) -> out.println(recIn +"\t" + name + "\t" + metric.evaluate()));
 	        out.close();
 	 		}
+		System.out.println("\nDone!");
 		break;
 			
 		default:
+			System.out.println("Parameters not recognized, try split/ub/eval as first parameter");
 			break;
 		}
 	}

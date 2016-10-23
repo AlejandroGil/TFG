@@ -40,21 +40,17 @@ import es.uam.eps.ir.ranksys.metrics.rel.NoRelevanceModel;
 public class EvaluationTest {
 
     public static void main(String[] args) throws Exception {
-        String trainDataPath = "src/main/resources/ml-100k/u5.base";
         String testDataPath = "src/main/resources/ml-100k/u5.test";
-        String recIn = "ub_MN_pearson_all";
+        String recIn = "ub";
         Double threshold = 0.0;
 
         // USER - ITEM - RATING files for train and test
-        PreferenceData<Long, Long> trainData = SimplePreferenceData.load(SimpleRatingPreferencesReader.get().read(trainDataPath, lp, lp));
         PreferenceData<Long, Long> testData = SimplePreferenceData.load(SimpleRatingPreferencesReader.get().read(testDataPath, lp, lp));
-        PreferenceData<Long, Long> totalData = new ConcatPreferenceData<>(trainData, testData);
         // EVALUATED AT CUTOFF 10
         int cutoff = 10;
         // BINARY RELEVANCE
         BinaryRelevanceModel<Long, Long> binRel = new BinaryRelevanceModel<>(false, testData, threshold);
         // NO RELEVANCE
-        NoRelevanceModel<Long, Long> norel = new NoRelevanceModel<>();
 
         Map<String, SystemMetric<Long, Long>> sysMetrics = new HashMap<>();
 
@@ -77,9 +73,6 @@ public class EvaluationTest {
         ////////////////////
         // SYSTEM METRICS //
         ////////////////////
-        sysMetrics.put("aggrdiv", new AggregateDiversityMetric<>(cutoff, norel));
-        int numItems = totalData.numItemsWithPreferences();
-        sysMetrics.put("gini", new GiniIndex<>(cutoff, numItems));
 
         RecommendationFormat<Long, Long> format = new SimpleRecommendationFormat<>(lp, lp);
 
