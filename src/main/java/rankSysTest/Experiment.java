@@ -51,15 +51,15 @@ import myRecommender.ThresholdUserSimilarity;
 public class Experiment {
 	private static final int NUM_RECS_PER_USER = 100;
 	private static final double EVAL_THRESHOLD = 0.0;
-	
+
 
 	public static void main(String[] args) throws Exception {
-		
+
 		if (args.length == 0){
 			System.out.println("Parameters incorrect -> try split/ub/eval as first parameter");
 			System.exit(0);
 		}
-			
+
 		if(args[0].equals("ub"))
 			if (args.length != 12){
 				System.out.println("Parameters incorrect -> ub userPath itemPath trainData testData outfile sim transf norm k q [alpha]");
@@ -70,11 +70,11 @@ public class Experiment {
 				System.out.println("Parameters incorrect -> ueval recfile traindata testdata outfile");
 				System.exit(0);
 			}
-			
+
 		/*else if(args[0].equals("split"))
 			if (args.length != )
 				System.out.println("Parameters incorrect -> ");*/
-		
+
 		switch (args[0]) {
 		case "split":
 			//RIVAL
@@ -90,7 +90,7 @@ public class Experiment {
 	        /*Loading user and item indexes ("0", "1", "2"... etc)*/
 	        FastUserIndex<Long> userIndex = SimpleFastUserIndex.load(UsersReader.read(userPath, lp));
 	        FastItemIndex<Long> itemIndex = SimpleFastItemIndex.load(ItemsReader.read(itemPath, lp));
-	        
+
 	        /*Reading rating file*/
 	        FastPreferenceData<Long, Long> trainData = SimpleFastPreferenceData.load(SimpleRatingPreferencesReader.get().read(trainDataPath, lp, lp), userIndex, itemIndex);
 	        FastPreferenceData<Long, Long> testData = SimpleFastPreferenceData.load(SimpleRatingPreferencesReader.get().read(testDataPath, lp, lp), userIndex, itemIndex);
@@ -104,9 +104,9 @@ public class Experiment {
             int k = Integer.parseInt(args[9]);
             int q = Integer.parseInt(args[10]);
             boolean norm = Boolean.parseBoolean(args[8]);
-            
+
             boolean dense = false;
-	        
+
 	        String simName = args[6];
             UserSimilarity<Long> sim = null;
             switch (simName) {
@@ -140,7 +140,7 @@ public class Experiment {
 			case "pearsoncn_th_0":
 				sim = new ThresholdUserSimilarity<>(trainData, new PearsonSimilarity(trainData, dense, 0.0, true), 0.0, 1.0);
 				break;
-			case "pearson_th_0.5":	
+			case "pearson_th_0.5":
 				sim = new ThresholdUserSimilarity<>(trainData, new PearsonSimilarity(trainData, dense, 0.0, false), 0.5, 1.0);
 				break;
 			case "pearsoncn_th_0.5":
@@ -149,7 +149,7 @@ public class Experiment {
 			default:
 				break;
 			}
-	        
+
             UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
             TRANSFORM tr = null;
             switch (args[7]) {
@@ -168,21 +168,21 @@ public class Experiment {
 			default:
 				break;
 			}
-            
+
             Recommender<Long, Long> recommender = new MyUserNeighborhoodRecommender<>(trainData, neighborhood, q, sim, tr, norm);
 	        String outfile = args[5];
 	        generateRecommendations(recommender, outfile, userIndex, itemIndex, trainData, testData, NUM_RECS_PER_USER);
 	        // en script, variar: fold (5), k (5, 10, 20, 40, 60, 100), tr (3), norm (2), sim (12)
 		}
 			break;
-			
+
 		case "eval":{
 			System.out.println("Parameters: eval recfile testdata outfile");
 	        String testDataPath = args[2];
 	        String recIn = args[1];
 	        Double threshold = EVAL_THRESHOLD;
 	        String outfile = args[3];
-	        
+
 	        // USER - ITEM - RATING files for train and test
 	        PreferenceData<Long, Long> testData = SimplePreferenceData.load(SimpleRatingPreferencesReader.get().read(testDataPath, lp, lp));
 	        // BINARY RELEVANCE
@@ -211,38 +211,38 @@ public class Experiment {
 	        RecommendationFormat<Long, Long> format = new SimpleRecommendationFormat<>(lp, lp);
 
 	        format.getReader(recIn).readAll().forEach(rec -> sysMetrics.values().forEach(metric -> metric.add(rec)));
-	        
+
 	        sysMetrics.forEach((name, metric) -> System.out.println(name + "\t" + metric.evaluate()));
-	        
+
 	        PrintStream out = new PrintStream(new File(outfile));
 	        sysMetrics.forEach((name, metric) -> out.println(recIn +"\t" + name + "\t" + metric.evaluate()));
 	        out.close();
 	 		}
 		System.out.println("\nDone!");
 		break;
-			
+
 		default:
 			System.out.println("Parameters not recognized, try split/ub/eval as first parameter");
 			break;
 		}
 	}
-	
+
 		private static void generateRecommendations(Recommender<Long, Long> rec, String outfile,
 	        FastUserIndex<Long> userIndex, FastItemIndex<Long> itemIndex,
 	        FastPreferenceData<Long, Long> trainData, FastPreferenceData<Long, Long> testData,
 	        int maxLength) throws IOException {
 		Set<Long> targetUsers = testData.getUsersWithPreferences().collect(Collectors.toSet());
-		
+
 		/* OUTPUT FORMAT -> userid	itemid	score */
 		RecommendationFormat<Long, Long> format = new SimpleRecommendationFormat<>(lp, lp);
 		Function<Long, IntPredicate> filter = FastFilters.notInTrain(trainData);
-		
+
 		RecommenderRunner<Long, Long> runner = new FastFilterRecommenderRunner<>(userIndex, itemIndex, targetUsers.stream(), filter, maxLength);
-		
+
 		try (RecommendationFormat.Writer<Long, Long> writer = format.getWriter(outfile)) {
 			runner.run(rec, writer);
 		}
-		
+
 		System.out.println("\nDone!");
 	}
 
