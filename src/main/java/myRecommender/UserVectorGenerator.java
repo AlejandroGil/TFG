@@ -56,17 +56,16 @@ public class UserVectorGenerator{
 		
 		vectorRatings = new HashMap<>();
 		
-		
-		
         data.getAllUidx().forEach(uIndex -> {
         	
         	HashMap<Integer, Double> aux = new HashMap<>();
         	
+        	/*for each user we take all the items rated, adding them to the map aux -> {itemId - rating} */
             data.getUidxPreferences(uIndex).forEach(p -> {
             	aux.put(p.v1, p.v2);
             	vectorRatings.put(uIndex, aux);
             });
-            
+                        
             data.getAllIidx().forEach(iIndex -> {
             	
             	if (!aux.containsKey(iIndex))
@@ -82,8 +81,8 @@ public class UserVectorGenerator{
         	
         	entry.getValue().entrySet().forEach(entryValue -> {
         		
-        		//System.out.println("User. " + entry.getKey() + " Item: " + entryValue.getKey() + "Rating: " + entryValue.getValue());
-        		out.print(entry.getValue());
+        		//System.out.println("User: " + entry.getKey() + " Item: " + entryValue.getKey() + "Rating: " + entryValue.getValue());
+        		out.print(entryValue.getValue() + "\t");
         	});
         	out.println();
         });
