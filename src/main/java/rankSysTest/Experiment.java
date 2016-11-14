@@ -61,7 +61,7 @@ public class Experiment {
 		}
 
 		if(args[0].equals("ub"))
-			if (args.length != 12){
+			if (args.length < 11){
 				System.out.println("Parameters incorrect -> ub userPath itemPath trainData testData outfile sim transf norm k q [alpha]");
 				System.exit(0);
 			}
