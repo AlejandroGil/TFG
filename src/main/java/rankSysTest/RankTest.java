@@ -67,7 +67,7 @@ public class RankTest {
         /*Loading user and item indexes ("0", "1", "2"... etc)*/
         FastUserIndex<Long> userIndex = SimpleFastUserIndex.load(UsersReader.read(userPath, lp));
         FastItemIndex<Long> itemIndex = SimpleFastItemIndex.load(ItemsReader.read(itemPath, lp));
-        
+
         /*Reading rating file*/
         FastPreferenceData<Long, Long> trainData = SimpleFastPreferenceData.load(SimpleRatingPreferencesReader.get().read(trainDataPath, lp, lp), userIndex, itemIndex);
         FastPreferenceData<Long, Long> testData = SimpleFastPreferenceData.load(SimpleRatingPreferencesReader.get().read(testDataPath, lp, lp), userIndex, itemIndex);
@@ -94,9 +94,8 @@ public class RankTest {
             int q = 1;
 
             UserSimilarity<Long> sim = new VectorCosineUserSimilarity<>(trainData, alpha, false);
-            /*No Threshold*/
             UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
-            
+
             /*With Threshold*/
             //ThresholdUserNeighborhood<Long> neighborhood = new ThresholdUserNeighborhood<>(sim, 0.3);
 
@@ -111,20 +110,20 @@ public class RankTest {
 
             UserSimilarity<Long> sim = new VectorCosineUserSimilarity<>(trainData, alpha, true);
             UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
-            
+
             return new UserNeighborhoodRecommender<>(trainData, neighborhood, q);
         });
-        
+
         recMap.put("ub_jaccard", () -> {
             int k = 100;
             int q = 1;
 
             UserSimilarity<Long> sim = new VectorJaccardUserSimilarity<>(trainData, true);
             UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
-            
+
             return new UserNeighborhoodRecommender<>(trainData, neighborhood, q);
         });
-        
+
      // user-based nearest neighbors wih threshold similarity
         recMap.put("ub_MyNeighbour", () -> {
             double alpha = 0.5;
@@ -133,7 +132,7 @@ public class RankTest {
 
             UserSimilarity<Long> sim = new VectorCosineUserSimilarity<>(trainData, alpha, false);
             UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
-            
+
             return new MyUserNeighborhoodRecommender<>(trainData, neighborhood, q, sim, TRANSFORM.Z, false);
         });
 
@@ -143,10 +142,10 @@ public class RankTest {
 
             UserSimilarity<Long> sim = new VectorJaccardUserSimilarity<>(trainData, false);
             UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
-            
+
             return new MyUserNeighborhoodRecommender<>(trainData, neighborhood, q, sim, TRANSFORM.Z, false);
         });
-        
+
         recMap.put("ub_MN_pearson_com", () -> {
         	double alpha = 0.5;
         	int k = 100;
@@ -154,10 +153,10 @@ public class RankTest {
 
             UserSimilarity<Long> sim = new PearsonUserSimilarity<>(trainData, false, 0, true);
             UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
-            
+
             return new MyUserNeighborhoodRecommender<>(trainData, neighborhood, q, sim, TRANSFORM.Z, false);
         });
-        
+
         recMap.put("ub_MN_pearson_all", () -> {
         	double alpha = 0.5;
         	int k = 100;
@@ -165,10 +164,10 @@ public class RankTest {
 
             UserSimilarity<Long> sim = new PearsonUserSimilarity<>(trainData, false, 0, false);
             UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
-            
+
             return new MyUserNeighborhoodRecommender<>(trainData, neighborhood, q, sim, TRANSFORM.Z, false);
         });
-        
+
         recMap.put("ib_MyNeighbour", () -> {
             double alpha = 0.5;
             int k = 100;
@@ -177,12 +176,12 @@ public class RankTest {
             ItemSimilarity<Long> sim = new VectorCosineItemSimilarity<>(trainData, alpha, false);
             ItemNeighborhood<Long> neighborhood = new TopKItemNeighborhood<>(sim, k);
             neighborhood = new CachedItemNeighborhood<>(neighborhood);
-            
+
             return new MyItemNeighborhoodRecommender<Long, Long>(trainData, neighborhood, q, sim, TRANSFORM.STD, false);
         });
-        
-        
-        
+
+
+
 
      // user-based nearest neighbors wih Pearson similarity
         recMap.put("ub_pearson_com", () -> {
@@ -191,11 +190,11 @@ public class RankTest {
 
             UserSimilarity<Long> sim = new PearsonUserSimilarity<>(trainData, false, 0, true);
             UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
-            
+
             //trainData.getUidxPreferences(0).forEach(p->System.out.println("0,"+p.v1+","+p.v2));
             //trainData.getUidxPreferences(1).forEach(p->System.out.println("1,"+p.v1+","+p.v2));
             //System.out.println(sim.similarity(0, 1));
-            
+
             return new UserNeighborhoodRecommender<>(trainData, neighborhood, q);
         });
 
@@ -205,14 +204,14 @@ public class RankTest {
 
             UserSimilarity<Long> sim = new PearsonUserSimilarity<>(trainData, false, 0, false);
             UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
-            
+
             //trainData.getUidxPreferences(0).forEach(p->System.out.println("0,"+p.v1+","+p.v2));
             //trainData.getUidxPreferences(1).forEach(p->System.out.println("1,"+p.v1+","+p.v2));
             //System.out.println(sim.similarity(0, 1));
-            
+
             return new UserNeighborhoodRecommender<>(trainData, neighborhood, q);
         });
-        
+
         // item-based nearest neighbors
         recMap.put("ib", () -> {
             double alpha = 0.5;
@@ -222,30 +221,30 @@ public class RankTest {
             ItemSimilarity<Long> sim = new VectorCosineItemSimilarity<>(trainData, alpha, true);
             ItemNeighborhood<Long> neighborhood = new TopKItemNeighborhood<>(sim, k);
             neighborhood = new CachedItemNeighborhood<>(neighborhood);
-            
+
             return new ItemNeighborhoodRecommender<>(trainData, neighborhood, q);
         });
-        
+
 		////////////////////////////////
 		// GENERATING RECOMMENDATIONS //
 		////////////////////////////////
 		Set<Long> targetUsers = testData.getUsersWithPreferences().collect(Collectors.toSet());
-		
+
 		/*OUTPUT FORMAT -> userid	itemid	score */
 		RecommendationFormat<Long, Long> format = new SimpleRecommendationFormat<>(lp, lp);
 		Function<Long, IntPredicate> filter = FastFilters.notInTrain(trainData);
-		
+
 		//Generate 20 recomendations per user
 		int maxLength = 20;
 		RecommenderRunner<Long, Long> runner = new FastFilterRecommenderRunner<>(userIndex, itemIndex, targetUsers.stream(), filter, maxLength);
-		
+
 		recMap.forEach(Unchecked.biConsumer((name, recommender) -> {
 		System.out.println("Running " + name);
 		try (RecommendationFormat.Writer<Long, Long> writer = format.getWriter(name)) {
 		runner.run(recommender.get(), writer);
 		}
 		}));
-		
+
 		System.out.println("\nDone!");
 	}
 
