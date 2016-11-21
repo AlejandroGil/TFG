@@ -13,7 +13,9 @@
  * Apache License Version 2.0 http://www.apache.org/licenses/.
  *
  */
-package thrift;
+package edu.cmu.lti.oaqa.apps;
+
+import edu.cmu.lti.oaqa.similarity.*;
 
 import org.apache.commons.cli.*;
 
@@ -61,6 +63,10 @@ public class Client {
   private final static String PORT_LONG_PARAM = "port";
   private final static String PORT_DESC = "TCP/IP server port number";
 
+  private final static String INPUT_SHORT_PARAM = "i";
+  private final static String INPUT_LONG_PARAM = "input";
+  private final static String INPUT_DESC = "Input file";
+
   private final static String HOST_SHORT_PARAM = "a";
   private final static String HOST_LONG_PARAM = "addr";
   private final static String HOST_DESC = "TCP/IP server address";
@@ -93,11 +99,13 @@ public class Client {
                        "-%s [%s] arg \t\t\t %s \n" +
                        "-%s [%s] arg \t\t\t %s \n" +
                        "-%s [%s] arg \t\t\t %s \n" +
+                       "-%s [%s] arg \t\t\t %s \n" +
                        "-%s [%s] arg \t %s \n" +
                        "-%s [%s] \t\t %s \n" +
                        "-%s [%s] \t\t\t %s \n"
                         ,
                        PORT_SHORT_PARAM, PORT_LONG_PARAM, PORT_DESC,
+                       INPUT_SHORT_PARAM, INPUT_LONG_PARAM, INPUT_DESC,
                        HOST_SHORT_PARAM, HOST_LONG_PARAM, HOST_DESC,
                        K_SHORT_PARAM, K_LONG_PARAM, K_DESC,
                        R_SHORT_PARAM, R_LONG_PARAM, R_DESC,
@@ -111,11 +119,13 @@ public class Client {
 
 
   public static void main(String args[]) throws IOException {
-    BufferedReader inp = new BufferedReader(new InputStreamReader(System.in));
 
     Options opt = new Options();
 
     Option o = new Option(PORT_SHORT_PARAM, PORT_LONG_PARAM, true, PORT_DESC);
+    o.setRequired(true);
+    opt.addOption(o);
+    o = new Option(INPUT_SHORT_PARAM, INPUT_LONG_PARAM, true, INPUT_DESC);
     o.setRequired(true);
     opt.addOption(o);
     o = new Option(HOST_SHORT_PARAM, HOST_LONG_PARAM, true, HOST_DESC);
@@ -129,10 +139,17 @@ public class Client {
 
     CommandLineParser parser = new org.apache.commons.cli.GnuParser();
 
+    int userId = 0;
+    /*Map to store userId, neighborsIds*/
+    HashMap<Integer, List<ReplyEntry>> nmsNeighbors = new HashMap();
+
     try {
       CommandLine cmd = parser.parse(opt, args);
 
       String host = cmd.getOptionValue(HOST_SHORT_PARAM);
+
+      String inputFile = cmd.getOptionValue(INPUT_SHORT_PARAM);
+      BufferedReader inp = new BufferedReader(new FileReader(inputFile));
 
       String tmp = null;
 
@@ -184,127 +201,72 @@ public class Client {
 
       String separator = System.getProperty("line.separator");
 
-      StringBuffer sb = new StringBuffer();
-      String       s;
+        try {
 
-      while ((s=inp.readLine()) != null) {
-        sb.append(s);
-        sb.append(separator);
-      }
+          TTransport transport = new TSocket(host, port);
+          transport.open();
 
-      String queryObj = sb.toString();
+          TProtocol protocol = new  TBinaryProtocol(transport);
+          QueryService.Client client = new QueryService.Client(protocol);
 
-      try {
-        TTransport transport = new TSocket(host, port);
-        transport.open();
+          StringBuffer sb = new StringBuffer();
 
-        TProtocol               protocol = new  TBinaryProtocol(transport);
-        QueryService.Client     client = new QueryService.Client(protocol);
+          String line = inp.readLine();
 
-        if (!queryTimeParams.isEmpty())
-          client.setQueryTimeParams(queryTimeParams);
+          while (line != null) {
 
-        List<ReplyEntry> res = null;
+            sb.append(line);
+            sb.append(separator);
 
-        long t1 = System.nanoTime();
+            String queryObj = sb.toString();
 
-        if (searchType == SearchType.kKNNSearch) {
-          System.out.println(String.format("Running a %d-NN search", k));
-          res = client.knnQuery(k, queryObj, retExternId, retObj);
-        } else {
-          System.out.println(String.format("Running a range search (r=%g)", r));
-          res = client.rangeQuery(r, queryObj, retExternId, retObj);
+          if (!queryTimeParams.isEmpty())
+            client.setQueryTimeParams(queryTimeParams);
+
+          List<ReplyEntry> res = null;
+
+          long t1 = System.nanoTime();
+
+          if (searchType == SearchType.kKNNSearch) {
+            System.out.println(String.format("Running a %d-NN search", k));
+            res = client.knnQuery(k, queryObj, retExternId, retObj);
+          } else {
+            //System.out.println(String.format("Running a range search (r=%g)", r));
+            res = client.rangeQuery(r, queryObj, retExternId, retObj);
+          }
+
+          long t2 = System.nanoTime();
+
+          //System.out.println(String.format("Finished in %g ms", (t2 - t1)/1e6));
+
+          /*for (ReplyEntry e: res) {
+            System.out.println(String.format("id=%d dist=%g %s", e.getId(), e.getDist(), retExternId ? "externId="+e.getExternId():"" ));
+            if (retObj) System.out.println(e.getObj());
+          }*/
+
+          nmsNeighbors.put(userId, res);
+
+          userId++;
+          queryObj = null;
+          line = inp.readLine();
         }
 
-        long t2 = System.nanoTime();
+        System.out.println("MAP ----> " + nmsNeighbors.get(0) + "\n" + nmsNeighbors.get(1));
 
-        System.out.println(String.format("Finished in %g ms", (t2 - t1)/1e6));
 
-        for (ReplyEntry e: res) {
-          System.out.println(String.format("id=%d dist=%g %s", e.getId(), e.getDist(), retExternId ? "externId="+e.getExternId():"" ));
-          if (retObj) System.out.println(e.getObj());
-        }
+    System.out.println("Done! Closing connection");
 
-        transport.close(); // Close transport/socket !
-      } catch (TException te) {
-        System.err.println("Apache Thrift exception: " + te);
-        te.printStackTrace();
-      }
+    transport.close(); // Close transport/socket !
+  } catch (TException te) {
+    System.err.println("Apache Thrift exception: " + te);
+    te.printStackTrace();
+  }
 
-    } catch (ParseException e) {
-      Usage("Cannot parse arguments");
-    } catch (Exception e) {
-      e.printStackTrace();
-      System.exit(1);
-    }
-
-    String outfile;
-
-    String userPath = "src/main/resources/ml-100k/users.txt";
-    String itemPath = "src/main/resources/ml-100k/items.txt";
-    String trainDataPath = "src/main/resources/ml-100k/u5.base";
-
-    Map<Integer, Map<Integer, Double>> vectorRatings;
-
-    /*Loading user and item indexes ("0", "1", "2"... etc)*/
-    FastUserIndex<Long> userIndex = SimpleFastUserIndex.load(UsersReader.read(userPath, lp));
-    FastItemIndex<Long> itemIndex = SimpleFastItemIndex.load(ItemsReader.read(itemPath, lp));
-
-    /*Reading rating file*/
-    FastPreferenceData<Long, Long> data = SimpleFastPreferenceData.load(SimpleRatingPreferencesReader.get().read(trainDataPath, lp, lp), userIndex, itemIndex);
-
-    /*if (args.length < 1){
-    System.out.println("Parameters incorrect. Usage: outputFile");
-    System.exit(0);
-    }*/
-
-    outfile = "vectorRatings.txt";
-
-    vectorRatings = new HashMap<>();
-
-    data.getAllUidx().forEach(uIndex -> {
-
-      HashMap<Integer, Double> aux = new HashMap<>();
-
-      /*for each user we take all the items rated, adding them to the map aux -> {itemId - rating} */
-        data.getUidxPreferences(uIndex).forEach(p -> {
-          aux.put(p.v1, p.v2);
-          vectorRatings.put(uIndex, aux);
-        });
-
-        data.getAllIidx().forEach(iIndex -> {
-
-          if (!aux.containsKey(iIndex))
-            aux.put(iIndex, 0.0);
-          vectorRatings.put(uIndex, aux);
-        });
-    });
-
-    int k = 100;
-    int q = 1;
-
-    UserSimilarity<Long> sim = new PearsonUserSimilarity<>(data, false, 0, false);
-    UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
-
-    neighborhood.getNeighbors(0).filter(v -> v.v2 > 0.31).forEach(n ->{
-      System.out.println("user id: " + n.v1 + " sim: " + n.v2);
-    });
-
-    PrintStream out = new PrintStream(new File(outfile));
-
-    vectorRatings.entrySet().stream().forEach(entry -> {
-
-      entry.getValue().entrySet().forEach(entryValue -> {
-
-        //System.out.println("User: " + entry.getKey() + " Item: " + entryValue.getKey() + "Rating: " + entryValue.getValue());
-        out.print(entryValue.getValue() + "\t");
-      });
-      out.println();
-    });
-
-    out.close();
-
-    System.out.println("Vector file created succesfully!");
-
+} catch (ParseException e) {
+  Usage("Cannot parse arguments");
+} catch (Exception e) {
+  e.printStackTrace();
+  System.exit(1);
+}
   }
 };
