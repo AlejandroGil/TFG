@@ -47,6 +47,8 @@ import es.uam.eps.ir.ranksys.nn.user.neighborhood.UserNeighborhood;
 import es.uam.eps.ir.ranksys.nn.user.sim.UserSimilarity;
 import es.uam.eps.ir.ranksys.nn.user.sim.VectorCosineUserSimilarity;
 import es.uam.eps.ir.ranksys.nn.user.sim.VectorJaccardUserSimilarity;
+import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
+
 import java.util.stream.Collectors;
 import myRecommender.PearsonUserSimilarity;
 import static org.ranksys.formats.parsing.Parsers.lp;
@@ -87,6 +89,7 @@ public class Client {
 	private final static String RET_EXTERN_ID_SHORT_PARAM = "e";
 	private final static String RET_EXTERN_ID_LONG_PARAM = "retExternId";
 	private final static String RET_EXTERN_ID_DESC = "Return external IDs?";
+        
 
 	static void Usage(String err) {
 		System.err.println("Error: " + err);
@@ -197,6 +200,8 @@ public class Client {
 				QueryService.Client client = new QueryService.Client(protocol);
 
 				String line = inp.readLine();
+				
+				k = 200; /*---------------------------------------------------- MODiFIED ----------------------------------------------------------*/
 
 				while (line != null) {
 					StringBuffer sb = new StringBuffer();
@@ -249,10 +254,7 @@ public class Client {
 					line = inp.readLine();
 				}
 
-				System.out.println("MAP ----> " + nmsNeighbors.get(0) + "\n" + nmsNeighbors.get(1));
                                 
-                                String outfile;
-
                                 String userPath = "src/main/resources/ml-100k/users.txt";
                                 String itemPath = "src/main/resources/ml-100k/items.txt";
                                 String trainDataPath = "src/main/resources/ml-100k/u1.base";
@@ -266,20 +268,33 @@ public class Client {
 
                                 int q = 1;
 
-                                UserSimilarity<Long> sim = new VectorCosineUserSimilarity<>(data, 0.5, false);
+                                UserSimilarity<Long> sim = new VectorCosineUserSimilarity<>(data, 0.5 ,true);
                                 UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
 
+                                Int2DoubleOpenHashMap commonRateMap = new Int2DoubleOpenHashMap();
+                                Int2DoubleOpenHashMap commonRate50knn = new Int2DoubleOpenHashMap();
+                                
+                                /*For all users, we compare the list stored in map of neighbours associated with a user (nmslib results) 
+                                with the real neighbours of that user */
                                 data.getAllUidx().forEach(uIndex ->{
                                     nmsNeighbors.entrySet().forEach(entry -> {
                                         
                                         if(entry.getKey() == uIndex){
                                             
                                             List<Integer> common = new ArrayList<>(entry.getValue());
-                                            common.retainAll(neighborhood.getNeighbors(uIndex).collect(Collectors.toList()));
-                                            System.out.println("Common neighbors -> " + common);
+                                            List<Integer> aux = new ArrayList<>();
+                                            
+                                            neighborhood.getNeighbors(uIndex).forEach(val -> {
+                                            	aux.add(val.v1);
+                                            });
+                                            
+                                            commonRateMap.addTo(0, common.size());
                                         }
                                     });
                                 });
+                                
+                                double hitRate = (double)commonRateMap.get(0)/(k * nmsNeighbors.size()) * 100.0;
+                                System.out.println("Hit Rate with Cosnine: " + hitRate + "%");
                                 
 				System.out.println("Done! Closing connection");
 
