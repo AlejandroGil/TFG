@@ -47,6 +47,7 @@ import es.uam.eps.ir.ranksys.nn.user.neighborhood.UserNeighborhood;
 import es.uam.eps.ir.ranksys.nn.user.sim.UserSimilarity;
 import es.uam.eps.ir.ranksys.nn.user.sim.VectorCosineUserSimilarity;
 import es.uam.eps.ir.ranksys.nn.user.sim.VectorJaccardUserSimilarity;
+import java.util.stream.Collectors;
 import myRecommender.PearsonUserSimilarity;
 import static org.ranksys.formats.parsing.Parsers.lp;
 
@@ -126,7 +127,7 @@ public class Client {
 
 		int userId = 0;
 		/* Map to store userId, neighborsIds */
-		HashMap<Integer, List<ReplyEntry>> nmsNeighbors = new HashMap();
+		HashMap<Integer, List<Integer>> nmsNeighbors = new HashMap<Integer, List<Integer>>();
 
 		try {
 			CommandLine cmd = parser.parse(opt, args);
@@ -209,10 +210,10 @@ public class Client {
 
 					List<ReplyEntry> res = null;
 
-					long t1 = System.nanoTime();
+					//long t1 = System.nanoTime();
 
 					if (searchType == SearchType.kKNNSearch) {
-						System.out.println(String.format("Running a %d-NN search", k));
+						//System.out.println(String.format("Running a %d-NN search", k));
 						res = client.knnQuery(k, queryObj, retExternId, retObj);
 					} else {
 						// System.out.println(String.format("Running a range
@@ -220,7 +221,7 @@ public class Client {
 						res = client.rangeQuery(r, queryObj, retExternId, retObj);
 					}
 
-					long t2 = System.nanoTime();
+					//long t2 = System.nanoTime();
 
 					// System.out.println(String.format("Finished in %g ms", (t2
 					// - t1)/1e6));
@@ -233,15 +234,53 @@ public class Client {
 					 * System.out.println(e.getObj()); }
 					 */
 
-					nmsNeighbors.put(userId, res);
+					res = res.stream().filter(v -> v.getDist() > 0.0).collect(Collectors.toList());
+
+					List <Integer> neighbors = new ArrayList<Integer>();
+                                        
+                                        res.forEach(elem -> {
+                                            neighbors.add(elem.getId());
+                                        });
+                                        
+					nmsNeighbors.put(userId, neighbors);
 
 					userId++;
 					queryObj = null;
 					line = inp.readLine();
 				}
 
-				//System.out.println("MAP ----> " + nmsNeighbors.get(0) + "\n" + nmsNeighbors.get(1));
+				System.out.println("MAP ----> " + nmsNeighbors.get(0) + "\n" + nmsNeighbors.get(1));
+                                
+                                String outfile;
 
+                                String userPath = "src/main/resources/ml-100k/users.txt";
+                                String itemPath = "src/main/resources/ml-100k/items.txt";
+                                String trainDataPath = "src/main/resources/ml-100k/u1.base";
+
+                                /*Loading user and item indexes ("0", "1", "2"... etc)*/
+                                FastUserIndex<Long> userIndex = SimpleFastUserIndex.load(UsersReader.read(userPath, lp));
+                                FastItemIndex<Long> itemIndex = SimpleFastItemIndex.load(ItemsReader.read(itemPath, lp));
+
+                                /*Reading rating file*/
+                                FastPreferenceData<Long, Long> data = SimpleFastPreferenceData.load(SimpleRatingPreferencesReader.get().read(trainDataPath, lp, lp), userIndex, itemIndex);
+
+                                int q = 1;
+
+                                UserSimilarity<Long> sim = new VectorCosineUserSimilarity<>(data, 0.5, false);
+                                UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
+
+                                data.getAllUidx().forEach(uIndex ->{
+                                    nmsNeighbors.entrySet().forEach(entry -> {
+                                        
+                                        if(entry.getKey() == uIndex){
+                                            
+                                            List<Integer> common = new ArrayList<>(entry.getValue());
+                                            common.retainAll(neighborhood.getNeighbors(uIndex).collect(Collectors.toList()));
+                                            System.out.println("Common neighbors -> " + common);
+                                        }
+                                    });
+                                });
+                                
 				System.out.println("Done! Closing connection");
 
 				transport.close(); // Close transport/socket !
