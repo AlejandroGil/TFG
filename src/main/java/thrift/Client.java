@@ -15,6 +15,7 @@
  */
 package thrift;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.cli.*;
 
 import org.apache.thrift.TException;
@@ -47,11 +48,11 @@ import es.uam.eps.ir.ranksys.nn.user.neighborhood.UserNeighborhood;
 import es.uam.eps.ir.ranksys.nn.user.sim.UserSimilarity;
 import es.uam.eps.ir.ranksys.nn.user.sim.VectorCosineUserSimilarity;
 import es.uam.eps.ir.ranksys.nn.user.sim.VectorJaccardUserSimilarity;
-import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
-
 import java.util.stream.Collectors;
 import myRecommender.PearsonUserSimilarity;
 import static org.ranksys.formats.parsing.Parsers.lp;
+import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
+
 
 public class Client {
 	enum SearchType {
@@ -90,7 +91,6 @@ public class Client {
 	private final static String RET_EXTERN_ID_LONG_PARAM = "retExternId";
 	private final static String RET_EXTERN_ID_DESC = "Return external IDs?";
         
-
 	static void Usage(String err) {
 		System.err.println("Error: " + err);
 		System.err.println(String.format(
@@ -200,8 +200,6 @@ public class Client {
 				QueryService.Client client = new QueryService.Client(protocol);
 
 				String line = inp.readLine();
-				
-				k = 200; /*---------------------------------------------------- MODiFIED ----------------------------------------------------------*/
 
 				while (line != null) {
 					StringBuffer sb = new StringBuffer();
@@ -226,19 +224,6 @@ public class Client {
 						res = client.rangeQuery(r, queryObj, retExternId, retObj);
 					}
 
-					//long t2 = System.nanoTime();
-
-					// System.out.println(String.format("Finished in %g ms", (t2
-					// - t1)/1e6));
-
-					/*
-					 * for (ReplyEntry e: res) {
-					 * System.out.println(String.format("id=%d dist=%g %s",
-					 * e.getId(), e.getDist(), retExternId ?
-					 * "externId="+e.getExternId():"" )); if (retObj)
-					 * System.out.println(e.getObj()); }
-					 */
-
 					res = res.stream().filter(v -> v.getDist() > 0.0).collect(Collectors.toList());
 
 					List <Integer> neighbors = new ArrayList<Integer>();
@@ -253,7 +238,7 @@ public class Client {
 					queryObj = null;
 					line = inp.readLine();
 				}
-
+                                
                                 
                                 String userPath = "src/main/resources/ml-100k/users.txt";
                                 String itemPath = "src/main/resources/ml-100k/items.txt";
@@ -270,31 +255,82 @@ public class Client {
 
                                 UserSimilarity<Long> sim = new VectorCosineUserSimilarity<>(data, 0.5 ,true);
                                 UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
-
-                                Int2DoubleOpenHashMap commonRateMap = new Int2DoubleOpenHashMap();
-                                Int2DoubleOpenHashMap commonRate50knn = new Int2DoubleOpenHashMap();
                                 
-                                /*For all users, we compare the list stored in map of neighbours associated with a user (nmslib results) 
-                                with the real neighbours of that user */
-                                data.getAllUidx().forEach(uIndex ->{
-                                    nmsNeighbors.entrySet().forEach(entry -> {
+                                Int2DoubleOpenHashMap commonRateMap = new Int2DoubleOpenHashMap();
+                                commonRateMap.defaultReturnValue(0.0);
+
+                                List<Integer> knn = Arrays.asList(k,100,50,10);
+                                List<Double> result = new ArrayList<>();
+                               
+                                Map<Integer, Map<Integer, Double>> auxNeighbours = new HashMap<>();  
+                                /*We need to sort neighbours by similarity*/
+                                data.getAllUidx().forEach(uIdx ->{
+                                    neighborhood.getNeighbors(uIdx).forEach(val -> {
                                         
-                                        if(entry.getKey() == uIndex){
+                                        if (!auxNeighbours.containsKey(uIdx)){
                                             
-                                            List<Integer> common = new ArrayList<>(entry.getValue());
-                                            List<Integer> aux = new ArrayList<>();
-                                            
-                                            neighborhood.getNeighbors(uIndex).forEach(val -> {
-                                            	aux.add(val.v1);
-                                            });
-                                            
-                                            commonRateMap.addTo(0, common.size());
+                                            Map<Integer, Double> aux = new HashMap<>();
+                                            aux.put(val.v1, val.v2);
+                                            auxNeighbours.put(uIdx, aux);
+                                        }
+                                        else {
+                                            auxNeighbours.get(uIdx).put(val.v1, val.v2);
                                         }
                                     });
                                 });
+                                                           
+                                Map<Integer, Map<Integer, Double>> orderedNeighbours = new HashMap<>();  
+                                    /*Sorting map by value*/
+                                auxNeighbours.entrySet().forEach(entry -> {
+                                                                        
+                                    orderedNeighbours.put(entry.getKey(), entry.getValue().entrySet().stream()
+                                    .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
+                                    .collect(Collectors.toMap(
+                                      Map.Entry::getKey, 
+                                      Map.Entry::getValue, 
+                                      (e1, e2) -> e1, 
+                                      LinkedHashMap::new)));
+                                });
+                                        
+                                        
                                 
-                                double hitRate = (double)commonRateMap.get(0)/(k * nmsNeighbors.size()) * 100.0;
-                                System.out.println("Hit Rate with Cosnine: " + hitRate + "%");
+                                
+                                /*For all users, we compare the list stored in map of neighbours associated with a user (nmslib results) 
+                                with the real neighbours of that user */
+                                knn.forEach(elem ->{
+
+                                    data.getAllUidx().forEach(uIndex ->{
+                                        nmsNeighbors.entrySet().forEach(entry -> {
+
+                                            if(entry.getKey() == uIndex){
+                                                
+                                                /*NMSLIB neighbours*/
+                                                List<Integer> common = new ArrayList<>(entry.getValue().stream().limit(elem).collect(Collectors.toList()));
+                                                List<Integer> aux = new ArrayList<>();
+                                                
+                                                /*Cosine neighbours*/
+                                                orderedNeighbours.get(uIndex).entrySet().stream().limit(elem).forEach(val -> {
+                                                    
+                                                    aux.add(val.getKey());
+                                                });
+                                                
+                                                common.retainAll(aux);
+                                                commonRateMap.addTo(1, common.size());
+                                            }
+                                        });
+                                    });
+
+                                    result.add(commonRateMap.get(1));
+                                    commonRateMap.put(1, 0.0);
+                                });
+                                                                
+                                int i = 0;
+                                
+                                for (Integer val : knn){
+                                    
+                                    System.out.println("Hit Rate with Cosnine @ " + val + " NN = " + result.get(i)/(val * data.getAllUidx().count()) * 100 + "%");
+                                    i++;
+                                } 
                                 
 				System.out.println("Done! Closing connection");
 
