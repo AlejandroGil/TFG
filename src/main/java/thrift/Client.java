@@ -15,7 +15,6 @@
  */
 package thrift;
 
-import com.google.common.collect.Lists;
 import org.apache.commons.cli.*;
 
 import org.apache.thrift.TException;
@@ -34,9 +33,6 @@ import org.ranksys.formats.index.ItemsReader;
 import org.ranksys.formats.index.UsersReader;
 import org.ranksys.formats.preference.SimpleRatingPreferencesReader;
 
-import com.google.common.collect.Multiset.Entry;
-
-import es.uam.eps.ir.ranksys.core.util.Stats;
 import es.uam.eps.ir.ranksys.fast.index.FastItemIndex;
 import es.uam.eps.ir.ranksys.fast.index.FastUserIndex;
 import es.uam.eps.ir.ranksys.fast.index.SimpleFastItemIndex;
@@ -226,7 +222,7 @@ public class Client {
 
 					res = res.stream().filter(v -> v.getDist() > 0.0).collect(Collectors.toList());
 
-					List <Integer> neighbors = new ArrayList<Integer>();
+					List <Integer> neighbors = new ArrayList<>();
                                         
                                         res.forEach(elem -> {
                                             neighbors.add(elem.getId());
@@ -251,37 +247,23 @@ public class Client {
                                 /*Reading rating file*/
                                 FastPreferenceData<Long, Long> data = SimpleFastPreferenceData.load(SimpleRatingPreferencesReader.get().read(trainDataPath, lp, lp), userIndex, itemIndex);
 
-                                int q = 1;
-
                                 UserSimilarity<Long> sim = new VectorCosineUserSimilarity<>(data, 0.5 ,true);
                                 UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
                                 
                                 Int2DoubleOpenHashMap commonRateMap = new Int2DoubleOpenHashMap();
                                 commonRateMap.defaultReturnValue(0.0);
-
+                                
                                 List<Integer> knn = Arrays.asList(k,100,50,10);
                                 List<Double> result = new ArrayList<>();
                                
-                                Map<Integer, Map<Integer, Double>> auxNeighbours = new HashMap<>();  
-                                /*We need to sort neighbours by similarity*/
-                                data.getAllUidx().forEach(uIdx ->{
-                                    neighborhood.getNeighbors(uIdx).forEach(val -> {
-                                        
-                                        if (!auxNeighbours.containsKey(uIdx)){
-                                            
-                                            Map<Integer, Double> aux = new HashMap<>();
-                                            aux.put(val.v1, val.v2);
-                                            auxNeighbours.put(uIdx, aux);
-                                        }
-                                        else {
-                                            auxNeighbours.get(uIdx).put(val.v1, val.v2);
-                                        }
-                                    });
-                                });
+                                Map<Integer, Map<Integer, Double>> auxNeighbours = new HashMap<>();
+                                simToMap(data, neighborhood, auxNeighbours);
                                                            
                                 Map<Integer, Map<Integer, Double>> orderedNeighbours = new HashMap<>();  
                                     /*Sorting map by value*/
-                                auxNeighbours.entrySet().forEach(entry -> {
+                                
+                                /* ------------------------------------------ Sort map by value -----------------------------------------------
+                                    auxNeighbours.entrySet().forEach(entry -> {
                                                                         
                                     orderedNeighbours.put(entry.getKey(), entry.getValue().entrySet().stream()
                                     .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
@@ -291,39 +273,66 @@ public class Client {
                                       (e1, e2) -> e1, 
                                       LinkedHashMap::new)));
                                 });
-                                        
-                                        
-                                
+                                ------------------------------------------------------------------------------------------------------------*/
                                 
                                 /*For all users, we compare the list stored in map of neighbours associated with a user (nmslib results) 
                                 with the real neighbours of that user */
+                                /* -------------------------------------------- Calculate common neighbours --------------------------------
                                 knn.forEach(elem ->{
-
                                     data.getAllUidx().forEach(uIndex ->{
                                         nmsNeighbors.entrySet().forEach(entry -> {
 
                                             if(entry.getKey() == uIndex){
                                                 
-                                                /*NMSLIB neighbours*/
+                                                /*NMSLIB neighbours
                                                 List<Integer> common = new ArrayList<>(entry.getValue().stream().limit(elem).collect(Collectors.toList()));
                                                 List<Integer> aux = new ArrayList<>();
                                                 
-                                                /*Cosine neighbours*/
+                                                /*Cosine neighbours
                                                 orderedNeighbours.get(uIndex).entrySet().stream().limit(elem).forEach(val -> {
                                                     
                                                     aux.add(val.getKey());
                                                 });
-                                                
                                                 common.retainAll(aux);
                                                 commonRateMap.addTo(1, common.size());
                                             }
                                         });
                                     });
-
                                     result.add(commonRateMap.get(1));
                                     commonRateMap.put(1, 0.0);
                                 });
-                                                                
+                                ---------------------------------------------------------------------------------------------------------------*/        
+                                
+                                /*------------------------------------------ Exporting ------------------------------------------------------*/
+                                String outfile = "NMSLIB-neighbours.txt";
+                                PrintStream out = new PrintStream(new File(outfile));
+                                
+                                /*Exporting to file NMSLIB neighbours*/
+                                nmsNeighbors.entrySet().stream().forEach(entry -> {
+
+                                    out.println(entry.getKey() + "\t" + entry.getValue().stream().
+                                        map(Object::toString).collect(Collectors.joining(",")).toString());
+                                });
+
+                                out.close();
+                                
+                                neighboursToFile("Cosine-neighbours.txt", auxNeighbours);
+
+                                UserSimilarity<Long> sim2 = new VectorJaccardUserSimilarity<>(data, true);
+                                UserNeighborhood<Long> neighborhood2 = new TopKUserNeighborhood<>(sim2, k);
+                                
+                                Map<Integer, Map<Integer, Double>> jaccardNeighbours = new HashMap<>();
+                                simToMap(data, neighborhood2, jaccardNeighbours);
+                                neighboursToFile("Jaccard-neighbours.txt", jaccardNeighbours);
+                                
+                                /*Pearson common*/
+                                UserSimilarity<Long> sim3 = new PearsonUserSimilarity<>(data, false, 0, true);
+                                UserNeighborhood<Long> neighborhood3 = new TopKUserNeighborhood<>(sim3, k);
+                                
+                                Map<Integer, Map<Integer, Double>> pearsonNeighbours = new HashMap<>();
+                                simToMap(data, neighborhood3, pearsonNeighbours);
+                                neighboursToFile("Pearson-neighbours.txt", pearsonNeighbours);
+                                
                                 int i = 0;
                                 
                                 for (Integer val : knn){
@@ -347,4 +356,35 @@ public class Client {
 			System.exit(1);
 		}
 	}
+        
+        private static void simToMap(FastPreferenceData<Long, Long> data, UserNeighborhood<Long> neighborhood, Map<Integer, Map<Integer, Double>> map){
+            
+             data.getAllUidx().forEach(uIdx ->{
+                neighborhood.getNeighbors(uIdx).forEach(val -> {
+
+                    if (!map.containsKey(uIdx)){
+
+                        Map<Integer, Double> aux = new HashMap<>();
+                        aux.put(val.v1, val.v2);
+                        map.put(uIdx, aux);
+                    }
+                    else {
+                        map.get(uIdx).put(val.v1, val.v2);
+                    }
+                });
+            });
+        }
+        
+        private static void neighboursToFile (String output, Map<Integer, Map<Integer, Double>> map) throws FileNotFoundException{
+         
+            PrintStream out = new PrintStream(new File(output));
+
+            /*Exporting to file cosine neighbours*/
+            map.entrySet().stream().forEach(entry -> {
+
+                out.println(entry.getKey() + "\t" + entry.getValue().keySet().stream().
+                    map(Object::toString).collect(Collectors.joining(",")));
+            });
+            out.close();
+        }
 }
