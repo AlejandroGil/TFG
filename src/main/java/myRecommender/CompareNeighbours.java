@@ -35,18 +35,6 @@ public class CompareNeighbours {
     
     	public static void main(String args[]) throws IOException {
     		
-    		String userPath = "src/main/resources/ml-100k/users.txt";
-            String itemPath = "src/main/resources/ml-100k/items.txt";
-            String trainDataPath = "src/main/resources/ml-100k/u1.base";
-
-            /*Loading user and item indexes ("0", "1", "2"... etc)*/
-            FastUserIndex<Long> userIndex = SimpleFastUserIndex.load(UsersReader.read(userPath, lp));
-            FastItemIndex<Long> itemIndex = SimpleFastItemIndex.load(ItemsReader.read(itemPath, lp));
-
-            /*Reading rating file*/
-            FastPreferenceData<Long, Long> data = SimpleFastPreferenceData.load(SimpleRatingPreferencesReader.get().read(trainDataPath, lp, lp), userIndex, itemIndex);
-
-            
             /*---------------------- Reading neighbours --------------------*/            
     		Map <Integer, List<Integer>> cosineNeighbours = fileToMap("Cosine-neighbours.txt");
     		Map <Integer, List<Integer>> nmslibNeighbours = fileToMap("NMSLIB-neighbours.txt");
@@ -58,12 +46,12 @@ public class CompareNeighbours {
             /* -------------------------------------------- Calculate common neighbours --------------------------------*/
             
             List<Integer> knn = Arrays.asList(500,100,50,10);
-            List<Double> commonRate = commonNeighbours(data, knn, cosineNeighbours, nmslibNeighbours);
+            List<Double> commonRate = commonNeighbours(knn, cosineNeighbours, nmslibNeighbours);
             
             int i = 0;
             for (Integer val : knn){
 
-                System.out.println("Hit Rate with Cosnine @ " + val + " NN = " + commonRate.get(i)/(val * data.getAllUidx().count()) * 100 + "%");
+                System.out.println("Hit Rate with Cosnine @ " + val + " NN = " + commonRate.get(i)/(val * cosineNeighbours.size()) * 100 + "%");
                 i++;
             }
     		
@@ -94,7 +82,7 @@ public class CompareNeighbours {
             return map;
         }
         
-        private static List<Double> commonNeighbours (FastPreferenceData<Long, Long> data, List<Integer> knn, 
+        private static List<Double> commonNeighbours (List<Integer> knn, 
         		Map<Integer, List<Integer>> map, Map<Integer, List<Integer>> map2){
         	
         	Int2DoubleOpenHashMap commonRateMap = new Int2DoubleOpenHashMap();
@@ -103,18 +91,16 @@ public class CompareNeighbours {
             List<Double> result = new ArrayList<>();
         	
         	knn.forEach(elem ->{
-                data.getAllUidx().forEach(uIndex ->{
-                    map.entrySet().forEach(entry -> {
-
-                        if(entry.getKey() == uIndex){
-
-                            /*NMSLIB neighbours*/
-                            List<Integer> common = new ArrayList<>(entry.getValue().stream().limit(elem).collect(Collectors.toList()));
-                            
-                            common.retainAll(map2.get(uIndex).stream().limit(elem).collect(Collectors.toList()));
-                            commonRateMap.addTo(1, common.size());
-                        }
-                    });
+	            map.entrySet().forEach(entry -> {
+	
+	            	if(map2.containsKey(entry.getKey())){
+	
+	                    /*NMSLIB neighbours*/
+	                    List<Integer> common = new ArrayList<>(entry.getValue().stream().limit(elem).collect(Collectors.toList()));
+	                    
+	                    common.retainAll(map2.get(entry.getKey()).stream().limit(elem).collect(Collectors.toList()));
+	                    commonRateMap.addTo(1, common.size());
+	                }
                 });
                 result.add(commonRateMap.get(1));
                 commonRateMap.put(1, 0.0);
