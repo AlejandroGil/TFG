@@ -5,26 +5,18 @@
  */
 package myRecommender;
 
-import static org.ranksys.formats.parsing.Parsers.lp;
-
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collector;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import org.ranksys.formats.index.ItemsReader;
-import org.ranksys.formats.index.UsersReader;
-import org.ranksys.formats.preference.SimpleRatingPreferencesReader;
-
-import es.uam.eps.ir.ranksys.fast.index.FastItemIndex;
-import es.uam.eps.ir.ranksys.fast.index.FastUserIndex;
-import es.uam.eps.ir.ranksys.fast.index.SimpleFastItemIndex;
-import es.uam.eps.ir.ranksys.fast.index.SimpleFastUserIndex;
-import es.uam.eps.ir.ranksys.fast.preference.FastPreferenceData;
-import es.uam.eps.ir.ranksys.fast.preference.SimpleFastPreferenceData;
 import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 
 /**
@@ -34,84 +26,83 @@ import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 public class CompareNeighbours {
 
 	public static void main(String args[]) throws IOException {
-
-		/*---------------------- Reading neighbours --------------------*/
-		Map<Integer, List<Integer>> cosineNeighbours = fileToMap("Cosine-neighbours.txt");
-		Map<Integer, List<Integer>> nmslibNeighbours = fileToMap("NMSLIB-neighbours.txt");
-
-		System.out.println("Neighbours in input file: " + nmslibNeighbours.get(0).size());
-
-		/*
-		 * For all users, we compare the list stored in map of neighbours
-		 * associated with a user (nmslib results) with the real neighbours of
-		 * that user
-		 */
-		/*
-		 * -------------------------------------------- Calculate common
-		 * neighbours --------------------------------
-		 */
-
-		List<Integer> knn = Arrays.asList(500, 100, 50, 10);
-		List<Double> commonRate = commonNeighbours(knn, cosineNeighbours, nmslibNeighbours);
-
-		int i = 0;
-		for (Integer val : knn) {
-
-			System.out.println("Hit Rate with Cosnine @ " + val + " NN = "
-					+ commonRate.get(i) / (val * cosineNeighbours.size()) * 100 + "%");
-			i++;
+		String file1 = "Cosine-neighbours.txt";
+		String file2 = "NMSLIB-neighbours.txt";
+		String k = "500, 100, 50, 10";
+		
+		//args = new String[]{file1, file2, k};
+		if (args.length == 3) {
+			file1 = args[0];
+			file2 = args[1];
+			k = args[2];
 		}
 
+		/*---------------------- Reading neighbours --------------------*/
+		Map<Integer, List<Integer>> file1Neighbours = fileToMap(file1);
+		Map<Integer, List<Integer>> file2Neighbours = fileToMap(file2);
+
+		System.out.println("Neighbours in " + file1 + ": " + file1Neighbours.get(0).size());
+		System.out.println("Neighbours in " + file2 + ": " + file2Neighbours.get(0).size());
+
+		List<Integer> knn = new ArrayList<>(Arrays.asList(k.split(",")).stream().map(String::trim).map(Integer::parseInt).collect(Collectors.toList()));
+		/*List<Integer> knn = new ArrayList<>();
+		for (String nn : k.split(",")) {
+			knn.add(Integer.parseInt(nn.trim()));
+		}*/
+
+		/*
+		 * For all users, we compare the list stored in each map of neighbours
+		 * associated with a user
+		 */
+		Map<Integer, Double> commonRate = commonNeighbours(knn, file1Neighbours, file2Neighbours);
+		for (Integer val : knn) {
+			System.out.println("Hit Rate between " + file1 + " and " + file2 + " @" + val + " = "
+					+ 100 * commonRate.get(val) + "%");
+		}
 	}
 
 	private static Map<Integer, List<Integer>> fileToMap(String inputFile) throws IOException {
 
 		BufferedReader inp = new BufferedReader(new FileReader(inputFile));
-		String line = inp.readLine();
 
 		Map<Integer, List<Integer>> map = new HashMap<>();
 
-		while (line != null) {
-			StringBuffer sb = new StringBuffer();
-			sb.append(line);
-			sb.append(System.getProperty("line.separator"));
-
-			int tabIndex = line.indexOf("\t");
-			String user = line.substring(0, tabIndex);
-
-			List<String> neighbours = new ArrayList<String>(Arrays.asList(line.substring(tabIndex + 1).split(",")));
-
+		String line = null;
+		while ((line = inp.readLine()) != null) {
+			String[] toks = line.split("\t");
+			String user = toks[0];
+			List<String> neighbours = new ArrayList<String>(Arrays.asList(toks[1].split(",")));
 			map.put(Integer.parseInt(user), neighbours.stream().map(Integer::parseInt).collect(Collectors.toList()));
-
-			line = inp.readLine();
 		}
+		inp.close();
 
 		return map;
 	}
 
-	private static List<Double> commonNeighbours(List<Integer> knn, Map<Integer, List<Integer>> map,
+	private static Map<Integer, Double> commonNeighbours(List<Integer> knn, Map<Integer, List<Integer>> map,
 			Map<Integer, List<Integer>> map2) {
 
 		Int2DoubleOpenHashMap commonRateMap = new Int2DoubleOpenHashMap();
 		commonRateMap.defaultReturnValue(0.0);
 
-		List<Double> result = new ArrayList<>();
+		Map<Integer, Double> result = new HashMap<>();
 
 		knn.forEach(elem -> {
 			map.entrySet().forEach(entry -> {
 
 				if (map2.containsKey(entry.getKey())) {
+					Set<Integer> common = new TreeSet<>(
+							entry.getValue().stream().limit(elem).collect(Collectors.toSet()));
 
-					/* NMSLIB neighbours */
-					List<Integer> common = new ArrayList<>(
-							entry.getValue().stream().limit(elem).collect(Collectors.toList()));
-
-					common.retainAll(map2.get(entry.getKey()).stream().limit(elem).collect(Collectors.toList()));
+					common.retainAll(map2.get(entry.getKey()).stream().limit(elem).collect(Collectors.toSet()));
+					// intersection size
 					commonRateMap.addTo(1, common.size());
+					// we will normalize by the maximum possible number of this intersection
+					commonRateMap.addTo(2, elem);
 				}
 			});
-			result.add(commonRateMap.get(1));
-			commonRateMap.put(1, 0.0);
+			result.put(elem, commonRateMap.get(1) / commonRateMap.get(2));
+			commonRateMap.clear();
 		});
 
 		return result;
