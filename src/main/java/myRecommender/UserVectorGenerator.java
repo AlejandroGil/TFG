@@ -27,82 +27,79 @@ import es.uam.eps.ir.ranksys.nn.user.sim.UserSimilarity;
 import es.uam.eps.ir.ranksys.nn.user.sim.VectorCosineUserSimilarity;
 import es.uam.eps.ir.ranksys.nn.user.sim.VectorJaccardUserSimilarity;
 
-public class UserVectorGenerator{
+public class UserVectorGenerator {
 
 	/**
 	 *
-	 * This class generates a file with the users and each item-rating. The rows represent the user and the colums represent the items (id)
+	 * This class generates a file with the users and each item-rating. The rows
+	 * represent the user and the columns represent the items (id)
+	 * 
 	 * @throws IOException
 	 */
 
 	public static void main(String[] args) throws IOException {
 
-				String outfile;
+		String outfile;
 
-				String userPath = "src/main/resources/ml-100k/users.txt";
-        String itemPath = "src/main/resources/ml-100k/items.txt";
-        String trainDataPath = "src/main/resources/ml-100k/u5.base";
+		String userPath = "src/main/resources/ml-100k/users.txt";
+		String itemPath = "src/main/resources/ml-100k/items.txt";
+		String trainDataPath = "src/main/resources/ml-100k/u5.base";
 
-        Map<Integer, Map<Integer, Double>> vectorRatings;
+		Map<Integer, Map<Integer, Double>> vectorRatings;
 
-        /*Loading user and item indexes ("0", "1", "2"... etc)*/
-        FastUserIndex<Long> userIndex = SimpleFastUserIndex.load(UsersReader.read(userPath, lp));
-        FastItemIndex<Long> itemIndex = SimpleFastItemIndex.load(ItemsReader.read(itemPath, lp));
+		/* Loading user and item indexes ("0", "1", "2"... etc) */
+		FastUserIndex<Long> userIndex = SimpleFastUserIndex.load(UsersReader.read(userPath, lp));
+		FastItemIndex<Long> itemIndex = SimpleFastItemIndex.load(ItemsReader.read(itemPath, lp));
 
-        /*Reading rating file*/
-        FastPreferenceData<Long, Long> data = SimpleFastPreferenceData.load(SimpleRatingPreferencesReader.get().read(trainDataPath, lp, lp), userIndex, itemIndex);
+		/* Reading rating file */
+		FastPreferenceData<Long, Long> data = SimpleFastPreferenceData
+				.load(SimpleRatingPreferencesReader.get().read(trainDataPath, lp, lp), userIndex, itemIndex);
 
-		/*if (args.length < 1){
-			System.out.println("Parameters incorrect. Usage: outputFile");
-			System.exit(0);
-		}*/
+		/*
+		 * if (args.length < 1){ System.out.println(
+		 * "Parameters incorrect. Usage: outputFile"); System.exit(0); }
+		 */
 
 		outfile = "vectorRatings.txt";
 
 		vectorRatings = new HashMap<>();
 
-        data.getAllUidx().forEach(uIndex -> {
+		data.getAllUidx().forEach(uIndex -> {
 
-        	HashMap<Integer, Double> aux = new HashMap<>();
+			HashMap<Integer, Double> aux = new HashMap<>();
 
-        	/*for each user we take all the items rated, adding them to the map aux -> {itemId - rating} */
-            data.getUidxPreferences(uIndex).forEach(p -> {
-            	aux.put(p.v1, p.v2);
-            	vectorRatings.put(uIndex, aux);
-            });
+			/*
+			 * for each user we take all the items rated, adding them to the map
+			 * aux -> {itemId - rating}
+			 */
+			data.getUidxPreferences(uIndex).forEach(p -> {
+				aux.put(p.v1, p.v2);
+				vectorRatings.put(uIndex, aux);
+			});
 
-            data.getAllIidx().forEach(iIndex -> {
+			data.getAllIidx().forEach(iIndex -> {
 
-            	if (!aux.containsKey(iIndex))
-            		aux.put(iIndex, 0.0);
-            	vectorRatings.put(uIndex, aux);
-            });
-        });
+				if (!aux.containsKey(iIndex))
+					aux.put(iIndex, 0.0);
+				vectorRatings.put(uIndex, aux);
+			});
+		});
 
-        int k = 100;
-        int q = 1;
+		PrintStream out = new PrintStream(new File(outfile));
 
-        UserSimilarity<Long> sim = new PearsonUserSimilarity<>(data, false, 0, false);
-        UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
+		vectorRatings.entrySet().stream().forEach(entry -> {
 
-        neighborhood.getNeighbors(0).filter(v -> v.v2 > 0.31).forEach(n ->{
-        	System.out.println("user id: " + n.v1 + " sim: " + n.v2);
-        });
+			entry.getValue().entrySet().forEach(entryValue -> {
 
-        PrintStream out = new PrintStream(new File(outfile));
+				// System.out.println("User: " + entry.getKey() + " Item: " +
+				// entryValue.getKey() + "Rating: " + entryValue.getValue());
+				out.print(entryValue.getValue() + "\t");
+			});
+			out.println();
+		});
 
-        vectorRatings.entrySet().stream().forEach(entry -> {
+		out.close();
 
-        	entry.getValue().entrySet().forEach(entryValue -> {
-
-        		//System.out.println("User: " + entry.getKey() + " Item: " + entryValue.getKey() + "Rating: " + entryValue.getValue());
-        		out.print(entryValue.getValue() + "\t");
-        	});
-        	out.println();
-        });
-
-        out.close();
-
-        System.out.println("Done!");
+		System.out.println("Done!");
 	}
 }
