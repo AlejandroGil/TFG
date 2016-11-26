@@ -5,27 +5,20 @@ import static org.ranksys.formats.parsing.Parsers.lp;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.ranksys.formats.index.ItemsReader;
 import org.ranksys.formats.index.UsersReader;
 import org.ranksys.formats.preference.SimpleRatingPreferencesReader;
 
-import com.google.common.collect.Multiset.Entry;
-
-import es.uam.eps.ir.ranksys.core.util.Stats;
+import es.uam.eps.ir.ranksys.core.preference.IdPref;
 import es.uam.eps.ir.ranksys.fast.index.FastItemIndex;
 import es.uam.eps.ir.ranksys.fast.index.FastUserIndex;
 import es.uam.eps.ir.ranksys.fast.index.SimpleFastItemIndex;
 import es.uam.eps.ir.ranksys.fast.index.SimpleFastUserIndex;
-import es.uam.eps.ir.ranksys.fast.preference.FastPreferenceData;
 import es.uam.eps.ir.ranksys.fast.preference.SimpleFastPreferenceData;
-import es.uam.eps.ir.ranksys.nn.user.neighborhood.TopKUserNeighborhood;
-import es.uam.eps.ir.ranksys.nn.user.neighborhood.UserNeighborhood;
-import es.uam.eps.ir.ranksys.nn.user.sim.UserSimilarity;
-import es.uam.eps.ir.ranksys.nn.user.sim.VectorCosineUserSimilarity;
-import es.uam.eps.ir.ranksys.nn.user.sim.VectorJaccardUserSimilarity;
 
 public class UserVectorGenerator {
 
@@ -39,66 +32,44 @@ public class UserVectorGenerator {
 
 	public static void main(String[] args) throws IOException {
 
-		String outfile;
-
+		String trainDataPath = "src/main/resources/ml-100k/u1.base";
+		String outfile = new File(trainDataPath).getName() +"__vectorRatings.txt";
+		String outfileUsers = outfile + "_users";
 		String userPath = "src/main/resources/ml-100k/users.txt";
 		String itemPath = "src/main/resources/ml-100k/items.txt";
-		String trainDataPath = "src/main/resources/ml-100k/u5.base";
-
-		Map<Integer, Map<Integer, Double>> vectorRatings;
+		double defaultValue = 0.0;
 
 		/* Loading user and item indexes ("0", "1", "2"... etc) */
 		FastUserIndex<Long> userIndex = SimpleFastUserIndex.load(UsersReader.read(userPath, lp));
 		FastItemIndex<Long> itemIndex = SimpleFastItemIndex.load(ItemsReader.read(itemPath, lp));
 
 		/* Reading rating file */
-		FastPreferenceData<Long, Long> data = SimpleFastPreferenceData
+		SimpleFastPreferenceData<Long, Long> data = SimpleFastPreferenceData
 				.load(SimpleRatingPreferencesReader.get().read(trainDataPath, lp, lp), userIndex, itemIndex);
 
-		/*
-		 * if (args.length < 1){ System.out.println(
-		 * "Parameters incorrect. Usage: outputFile"); System.exit(0); }
-		 */
-
-		outfile = "vectorRatings.txt";
-
-		vectorRatings = new HashMap<>();
-
-		data.getAllUidx().forEach(uIndex -> {
-
-			HashMap<Integer, Double> aux = new HashMap<>();
-
-			/*
-			 * for each user we take all the items rated, adding them to the map
-			 * aux -> {itemId - rating}
-			 */
-			data.getUidxPreferences(uIndex).forEach(p -> {
-				aux.put(p.v1, p.v2);
-				vectorRatings.put(uIndex, aux);
-			});
-
-			data.getAllIidx().forEach(iIndex -> {
-
-				if (!aux.containsKey(iIndex))
-					aux.put(iIndex, 0.0);
-				vectorRatings.put(uIndex, aux);
-			});
-		});
+		// get all items in order (important so that every user is represented
+		// in the same way)
+		List<Long> items = itemIndex.getAllItems().sorted().collect(Collectors.toList());
 
 		PrintStream out = new PrintStream(new File(outfile));
+		PrintStream outUsers = new PrintStream(new File(outfileUsers));
 
-		vectorRatings.entrySet().stream().forEach(entry -> {
+		data.getAllUsers().forEach(u -> {
+			outUsers.println(u);
 
-			entry.getValue().entrySet().forEach(entryValue -> {
-
-				// System.out.println("User: " + entry.getKey() + " Item: " +
-				// entryValue.getKey() + "Rating: " + entryValue.getValue());
-				out.print(entryValue.getValue() + "\t");
+			items.forEach(i -> {
+				double p = defaultValue;
+				Optional<? extends IdPref<Long>> pref = data.getPreference(u, i);
+				if (pref.isPresent()) {
+					p = pref.get().v2();
+				}
+				out.print(p + "\t");
 			});
 			out.println();
 		});
 
 		out.close();
+		outUsers.close();
 
 		System.out.println("Done!");
 	}
