@@ -27,10 +27,10 @@ public class CompareNeighbours {
 
 	public static void main(String args[]) throws IOException {
 		String file1 = "u1.base__cosine__neighbours.txt"; // "Cosine-neighbours.txt";
-		String file2 = "u1.base__nmslib__neighbours.txt"; //"NMSLIB-neighbours.txt";
+		String file2 = "u1.base__nmslib__neighbours.txt"; // "NMSLIB-neighbours.txt";
 		String k = "500, 100, 50, 10";
-		
-		//args = new String[]{file1, file2, k};
+
+		// args = new String[]{file1, file2, k};
 		if (args.length == 3) {
 			file1 = args[0];
 			file2 = args[1];
@@ -44,11 +44,12 @@ public class CompareNeighbours {
 		System.out.println("Neighbours in " + file1 + ": " + file1Neighbours.get(0).size());
 		System.out.println("Neighbours in " + file2 + ": " + file2Neighbours.get(0).size());
 
-		List<Integer> knn = new ArrayList<>(Arrays.asList(k.split(",")).stream().map(String::trim).map(Integer::parseInt).collect(Collectors.toList()));
-		/*List<Integer> knn = new ArrayList<>();
-		for (String nn : k.split(",")) {
-			knn.add(Integer.parseInt(nn.trim()));
-		}*/
+		List<Integer> knn = new ArrayList<>(Arrays.asList(k.split(",")).stream().map(String::trim)
+				.map(Integer::parseInt).collect(Collectors.toList()));
+		/*
+		 * List<Integer> knn = new ArrayList<>(); for (String nn : k.split(","))
+		 * { knn.add(Integer.parseInt(nn.trim())); }
+		 */
 
 		/*
 		 * For all users, we compare the list stored in each map of neighbours
@@ -72,7 +73,9 @@ public class CompareNeighbours {
 			String[] toks = line.split("\t");
 			String user = toks[0];
 			List<String> neighbours = new ArrayList<String>(Arrays.asList(toks[1].split(",")));
-			map.put(Long.parseLong(user), neighbours.stream().map(Long::parseLong).collect(Collectors.toList()));
+			// the neighbours can be encoded as n:s or as n. We only want the neighbour id.
+			map.put(Long.parseLong(user), neighbours.stream().map(s -> (s.contains(":") ? s.split(":")[0] : s))
+					.map(Long::parseLong).collect(Collectors.toList()));
 		}
 		inp.close();
 
@@ -91,13 +94,13 @@ public class CompareNeighbours {
 			map.entrySet().forEach(entry -> {
 
 				if (map2.containsKey(entry.getKey())) {
-					Set<I> common = new TreeSet<>(
-							entry.getValue().stream().limit(elem).collect(Collectors.toSet()));
+					Set<I> common = new TreeSet<>(entry.getValue().stream().limit(elem).collect(Collectors.toSet()));
 
 					common.retainAll(map2.get(entry.getKey()).stream().limit(elem).collect(Collectors.toSet()));
 					// intersection size
 					commonRateMap.addTo(1, common.size());
-					// we will normalize by the maximum possible number of this intersection
+					// we will normalize by the maximum possible number of this
+					// intersection
 					commonRateMap.addTo(2, elem);
 				}
 			});
