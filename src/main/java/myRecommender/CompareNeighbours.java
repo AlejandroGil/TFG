@@ -26,8 +26,8 @@ import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 public class CompareNeighbours {
 
 	public static void main(String args[]) throws IOException {
-		String file1 = "Cosine-neighbours.txt";
-		String file2 = "NMSLIB-neighbours.txt";
+		String file1 = "u1.base__cosine__neighbours.txt"; // "Cosine-neighbours.txt";
+		String file2 = "u1.base__nmslib__neighbours.txt"; //"NMSLIB-neighbours.txt";
 		String k = "500, 100, 50, 10";
 		
 		//args = new String[]{file1, file2, k};
@@ -38,8 +38,8 @@ public class CompareNeighbours {
 		}
 
 		/*---------------------- Reading neighbours --------------------*/
-		Map<Integer, List<Integer>> file1Neighbours = fileToMap(file1);
-		Map<Integer, List<Integer>> file2Neighbours = fileToMap(file2);
+		Map<Long, List<Long>> file1Neighbours = fileToMap(file1);
+		Map<Long, List<Long>> file2Neighbours = fileToMap(file2);
 
 		System.out.println("Neighbours in " + file1 + ": " + file1Neighbours.get(0).size());
 		System.out.println("Neighbours in " + file2 + ": " + file2Neighbours.get(0).size());
@@ -61,26 +61,26 @@ public class CompareNeighbours {
 		}
 	}
 
-	private static Map<Integer, List<Integer>> fileToMap(String inputFile) throws IOException {
+	private static Map<Long, List<Long>> fileToMap(String inputFile) throws IOException {
 
 		BufferedReader inp = new BufferedReader(new FileReader(inputFile));
 
-		Map<Integer, List<Integer>> map = new HashMap<>();
+		Map<Long, List<Long>> map = new HashMap<>();
 
 		String line = null;
 		while ((line = inp.readLine()) != null) {
 			String[] toks = line.split("\t");
 			String user = toks[0];
 			List<String> neighbours = new ArrayList<String>(Arrays.asList(toks[1].split(",")));
-			map.put(Integer.parseInt(user), neighbours.stream().map(Integer::parseInt).collect(Collectors.toList()));
+			map.put(Long.parseLong(user), neighbours.stream().map(Long::parseLong).collect(Collectors.toList()));
 		}
 		inp.close();
 
 		return map;
 	}
 
-	private static Map<Integer, Double> commonNeighbours(List<Integer> knn, Map<Integer, List<Integer>> map,
-			Map<Integer, List<Integer>> map2) {
+	private static <I> Map<Integer, Double> commonNeighbours(List<Integer> knn, Map<I, List<I>> map,
+			Map<I, List<I>> map2) {
 
 		Int2DoubleOpenHashMap commonRateMap = new Int2DoubleOpenHashMap();
 		commonRateMap.defaultReturnValue(0.0);
@@ -91,7 +91,7 @@ public class CompareNeighbours {
 			map.entrySet().forEach(entry -> {
 
 				if (map2.containsKey(entry.getKey())) {
-					Set<Integer> common = new TreeSet<>(
+					Set<I> common = new TreeSet<>(
 							entry.getValue().stream().limit(elem).collect(Collectors.toSet()));
 
 					common.retainAll(map2.get(entry.getKey()).stream().limit(elem).collect(Collectors.toSet()));
