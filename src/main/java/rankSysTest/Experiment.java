@@ -74,7 +74,8 @@ public class Experiment {
 			}
 		} else if (args[0].equals("out_neighs")) {
 			if (args.length < 9) {
-				System.out.println("Parameters incorrect -> out_neighs userPath itemPath trainData outfile sim norm k q [alpha]");
+				System.out.println(
+						"Parameters incorrect -> out_neighs userPath itemPath trainData outfile sim norm k q [alpha]");
 				System.exit(0);
 			}
 		}
@@ -185,7 +186,8 @@ public class Experiment {
 
 			Map<Integer, Map<Integer, Double>> auxNeighbours = new HashMap<>();
 			simToMap(neighborhood, auxNeighbours);
-			neighboursToFile(outFile, auxNeighbours);
+			// by default, we want the similarities in the file
+			neighboursToFile(outFile, auxNeighbours, true);
 		}
 			break;
 
@@ -333,7 +335,7 @@ public class Experiment {
 		});
 	}
 
-	private static void neighboursToFile(String output, Map<Integer, Map<Integer, Double>> map)
+	private static void neighboursToFile(String output, Map<Integer, Map<Integer, Double>> map, boolean outputSim)
 			throws FileNotFoundException {
 
 		PrintStream out = new PrintStream(new File(output));
@@ -343,11 +345,10 @@ public class Experiment {
 			// entry.getValue().keySet().stream().map(Object::toString).collect(Collectors.joining(",")));
 			Map<Integer, Double> neighbours = entry.getValue();
 			// sort by (reverse) value
-			out.println(
-					entry.getKey() + "\t"
-							+ neighbours.entrySet().stream()
-									.sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
-									.map(e -> e.getKey().toString()).collect(Collectors.joining(",")));
+			out.println(entry.getKey() + "\t"
+					+ neighbours.entrySet().stream().sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
+							.map(e -> e.getKey().toString() + (outputSim ? ":" + e.getValue() : ""))
+							.collect(Collectors.joining(",")));
 		});
 		out.close();
 	}
