@@ -55,6 +55,8 @@ public class Experiment {
 	private static final double EVAL_THRESHOLD = 0.0;
 
 	public static void main(String[] args) throws Exception {
+		
+		args = new String[]{"out_neighs", "src/main/resources/ml-100k/users.txt", "src/main/resources/ml-100k/items.txt", "src/main/resources/ml-100k/u1.base", "u1.base__cosine_neighbors.txt", "cosine", "false", "500", "0"};
 
 		if (args.length == 0) {
 			System.out.println("Parameters incorrect -> try split/ub/eval as first parameter");
@@ -184,7 +186,7 @@ public class Experiment {
 					simName);
 			UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
 
-			Map<Integer, Map<Integer, Double>> auxNeighbours = new HashMap<>();
+			Map<Long, Map<Long, Double>> auxNeighbours = new HashMap<>();
 			simToMap(neighborhood, auxNeighbours);
 			// by default, we want the similarities in the file
 			neighboursToFile(outFile, auxNeighbours, true);
@@ -320,22 +322,22 @@ public class Experiment {
 		System.out.println("\nDone!");
 	}
 
-	private static void simToMap(UserNeighborhood<Long> neighborhood, Map<Integer, Map<Integer, Double>> map) {
-		neighborhood.getAllUidx().forEach(uIdx -> {
-			neighborhood.getNeighbors(uIdx).forEach(val -> {
-				if (!map.containsKey(uIdx)) {
+	private static void simToMap(UserNeighborhood<Long> neighborhood, Map<Long, Map<Long, Double>> map) {
+		neighborhood.getAllUsers().forEach(u -> {
+			neighborhood.getNeighbors(u).forEach(val -> {
+				if (!map.containsKey(u)) {
 
-					Map<Integer, Double> aux = new HashMap<>();
+					Map<Long, Double> aux = new HashMap<>();
 					aux.put(val.v1, val.v2);
-					map.put(uIdx, aux);
+					map.put(u, aux);
 				} else {
-					map.get(uIdx).put(val.v1, val.v2);
+					map.get(u).put(val.v1, val.v2);
 				}
 			});
 		});
 	}
 
-	private static void neighboursToFile(String output, Map<Integer, Map<Integer, Double>> map, boolean outputSim)
+	private static void neighboursToFile(String output, Map<Long, Map<Long, Double>> map, boolean outputSim)
 			throws FileNotFoundException {
 
 		PrintStream out = new PrintStream(new File(output));
@@ -343,7 +345,7 @@ public class Experiment {
 		map.entrySet().stream().forEach(entry -> {
 			// out.println(entry.getKey() + "\t" +
 			// entry.getValue().keySet().stream().map(Object::toString).collect(Collectors.joining(",")));
-			Map<Integer, Double> neighbours = entry.getValue();
+			Map<Long, Double> neighbours = entry.getValue();
 			// sort by (reverse) value
 			out.println(entry.getKey() + "\t"
 					+ neighbours.entrySet().stream().sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))

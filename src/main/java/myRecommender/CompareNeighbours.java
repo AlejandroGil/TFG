@@ -26,8 +26,8 @@ import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 public class CompareNeighbours {
 
 	public static void main(String args[]) throws IOException {
-		String file1 = "u1.base__cosine__neighbours.txt"; // "Cosine-neighbours.txt";
-		String file2 = "u1.base__nmslib__neighbours.txt"; // "NMSLIB-neighbours.txt";
+		String file1 = "u1.base__cosine_neighbors.txt"; // "Cosine-neighbours.txt";
+		String file2 = "u1.base__NMSLIB_neighbors.txt"; // "NMSLIB-neighbours.txt";
 		String k = "500, 100, 50, 10";
 
 		// args = new String[]{file1, file2, k};
@@ -41,8 +41,8 @@ public class CompareNeighbours {
 		Map<Long, List<Long>> file1Neighbours = fileToMap(file1);
 		Map<Long, List<Long>> file2Neighbours = fileToMap(file2);
 
-		System.out.println("Neighbours in " + file1 + ": " + file1Neighbours.get(0).size());
-		System.out.println("Neighbours in " + file2 + ": " + file2Neighbours.get(0).size());
+		System.out.println("Neighbours in " + file1 + ": " + file1Neighbours.get(file1Neighbours.keySet().stream().findFirst().get()).size());
+		System.out.println("Neighbours in " + file2 + ": " + file2Neighbours.get(file2Neighbours.keySet().stream().findFirst().get()).size());
 
 		List<Integer> knn = new ArrayList<>(Arrays.asList(k.split(",")).stream().map(String::trim)
 				.map(Integer::parseInt).collect(Collectors.toList()));

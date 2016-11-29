@@ -189,8 +189,11 @@ public class Client {
 				Usage("One has to specify either range or KNN-search parameter");
 			}
 
-			/* Map to store userId, neighborsIds */
-			Map<Long, List<Long>> nmsNeighbors = new HashMap<>();
+			/*------------------------------------------ Exporting ------------------------------------------------------*/
+			boolean printSim = true;
+			String outfile = cmd.getOptionValue(OUTPUT_SHORT_PARAM);//"NMSLIB-neighbours.txt";
+
+			PrintStream out = new PrintStream(new File(outfile));
 
 			String separator = System.getProperty("line.separator");
 			try {
@@ -218,37 +221,33 @@ public class Client {
 					if (searchType == SearchType.kKNNSearch) {
 						// System.out.println(String.format("Running a %d-NN
 						// search", k));
-						res = client.knnQuery(k, queryObj, retExternId, retObj);
+						res = client.knnQuery(k+1, queryObj, retExternId, retObj);
 					} else {
 						// System.out.println(String.format("Running a range
 						// search (r=%g)", r));
 						res = client.rangeQuery(r, queryObj, retExternId, retObj);
 					}
 
-					res = res.stream().filter(v -> v.getDist() > 0.0).collect(Collectors.toList());
+					//res = res.stream().filter(v -> v.getDist() > 0.0).collect(Collectors.toList());
+					res = res.stream().collect(Collectors.toList());
 
-					List<Long> neighbors = new ArrayList<>();
-
+					final Long userId = userMapping.get(nLine);
+					StringBuffer sbBuffer = new StringBuffer();
 					res.forEach(elem -> {
 						// the returned ids start in zero by default, so we need to transform that value to a proper id
-						neighbors.add(userMapping.get(elem.getId()));
+						Long id = userMapping.get(elem.getId());
+						if (id != userId){
+							sbBuffer.append(id + (printSim ? ":" + elem.dist : "") + ",");
+						}
 					});
+					out.println(userId + "\t" + sbBuffer.substring(0, sbBuffer.length()-1));
 
-					nmsNeighbors.put(userMapping.get(nLine), neighbors);
 
 					nLine++;
 				}
 				
 				inp.close();
 
-				/*------------------------------------------ Exporting ------------------------------------------------------*/
-				String outfile = cmd.getOptionValue(OUTPUT_SHORT_PARAM);//"NMSLIB-neighbours.txt";
-
-				PrintStream out = new PrintStream(new File(outfile));
-				nmsNeighbors.entrySet().stream().forEach(entry -> {
-					out.println(entry.getKey() + "\t" + entry.getValue().stream().map(Object::toString)
-							.collect(Collectors.joining(",")).toString());
-				});
 				out.close();
 
 				System.out.println("Done! Neighborhood files created succesfuly. Closing connection");
