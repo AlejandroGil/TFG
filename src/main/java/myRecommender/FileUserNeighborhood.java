@@ -23,7 +23,7 @@ public class FileUserNeighborhood implements Neighborhood {
 
 	private Map<Integer, List<Tuple2id>> neighborsFromFile;
 
-	public FileUserNeighborhood(FastUserIndex<Long> uIndex, File fileNeighborhood)
+	public FileUserNeighborhood(FastUserIndex<Long> uIndex, File fileNeighborhood, int k)
 			throws FileNotFoundException, IOException {
 		neighborsFromFile = new HashMap<>();
 		// read the file
@@ -36,7 +36,7 @@ public class FileUserNeighborhood implements Neighborhood {
 			Long userid = Long.parseLong(toks[0]);
 			int uidx = uIndex.user2uidx(userid);
 
-			List<String> temp = Arrays.asList(toks[1].split(",")).stream().map(String::trim)
+			List<String> temp = Arrays.asList(toks[1].split(",")).stream().limit(k).map(String::trim)
 					.collect(Collectors.toList());
 			List<Tuple2id> neighbors = new ArrayList<>();
 			IntStream.range(0, temp.size()).forEach(idx -> {

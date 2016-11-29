@@ -35,6 +35,7 @@ import es.uam.eps.ir.ranksys.metrics.basic.NDCG;
 import es.uam.eps.ir.ranksys.metrics.basic.Precision;
 import es.uam.eps.ir.ranksys.metrics.basic.Recall;
 import es.uam.eps.ir.ranksys.metrics.rel.BinaryRelevanceModel;
+import es.uam.eps.ir.ranksys.nn.user.UserNeighborhoodRecommender;
 import es.uam.eps.ir.ranksys.nn.user.neighborhood.TopKUserNeighborhood;
 import es.uam.eps.ir.ranksys.nn.user.neighborhood.UserNeighborhood;
 import es.uam.eps.ir.ranksys.nn.user.sim.UserSimilarity;
@@ -44,6 +45,7 @@ import es.uam.eps.ir.ranksys.rec.Recommender;
 import es.uam.eps.ir.ranksys.rec.runner.RecommenderRunner;
 import es.uam.eps.ir.ranksys.rec.runner.fast.FastFilterRecommenderRunner;
 import es.uam.eps.ir.ranksys.rec.runner.fast.FastFilters;
+import myRecommender.FileUserNeighborhood;
 import myRecommender.MyUserNeighborhoodRecommender;
 import myRecommender.MyUserNeighborhoodRecommender.TRANSFORM;
 import myRecommender.PearsonSimilarity;
@@ -55,8 +57,12 @@ public class Experiment {
 	private static final double EVAL_THRESHOLD = 0.0;
 
 	public static void main(String[] args) throws Exception {
-		
-		//args = new String[]{"out_neighs", "src/main/resources/ml-100k/users.txt", "src/main/resources/ml-100k/items.txt", "src/main/resources/ml-100k/u1.base", "u1.base__cosine_neighbors.txt", "cosine", "false", "500", "0"};
+
+		// args = new String[]{"out_neighs",
+		// "src/main/resources/ml-100k/users.txt",
+		// "src/main/resources/ml-100k/items.txt",
+		// "src/main/resources/ml-100k/u1.base",
+		// "u1.base__cosine_neighbors.txt", "cosine", "false", "500", "0"};
 
 		if (args.length == 0) {
 			System.out.println("Parameters incorrect -> try split/ub/eval as first parameter");
@@ -123,8 +129,7 @@ public class Experiment {
 			boolean dense = false;
 
 			String simName = args[6];
-			UserSimilarity<Long> sim = userSimilarityFactory(userIndex, itemIndex, trainData, alpha, dense,
-					simName);
+			UserSimilarity<Long> sim = userSimilarityFactory(userIndex, itemIndex, trainData, alpha, dense, simName);
 
 			UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
 			TRANSFORM tr = null;
@@ -180,8 +185,7 @@ public class Experiment {
 			boolean dense = false;
 
 			String simName = args[5];
-			UserSimilarity<Long> sim = userSimilarityFactory(userIndex, itemIndex, trainData, alpha, dense,
-					simName);
+			UserSimilarity<Long> sim = userSimilarityFactory(userIndex, itemIndex, trainData, alpha, dense, simName);
 			UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
 
 			Map<Long, Map<Long, Double>> auxNeighbours = new HashMap<>();
@@ -239,6 +243,40 @@ public class Experiment {
 			System.out.println("\nDone!");
 			break;
 
+		case "recFile": {
+			System.out.println("Parameters: recFile userPath itemPath trainData testData neighFile k q outfile");
+			String userPath = args[1];
+			String itemPath = args[2];
+			String trainDataPath = args[3];
+			String testDataPath = args[4];
+
+			/* Loading user and item indexes ("0", "1", "2"... etc) */
+			FastUserIndex<Long> userIndex = SimpleFastUserIndex.load(UsersReader.read(userPath, lp));
+			FastItemIndex<Long> itemIndex = SimpleFastItemIndex.load(ItemsReader.read(itemPath, lp));
+
+			/* Reading rating file */
+			FastPreferenceData<Long, Long> trainData = SimpleFastPreferenceData
+					.load(SimpleRatingPreferencesReader.get().read(trainDataPath, lp, lp), userIndex, itemIndex);
+			FastPreferenceData<Long, Long> testData = SimpleFastPreferenceData
+					.load(SimpleRatingPreferencesReader.get().read(testDataPath, lp, lp), userIndex, itemIndex);
+
+			File fileNeighborhood = new File(args[5]);
+			int k = Integer.parseInt(args[6]);
+			FileUserNeighborhood fileUserNeighborhood = new FileUserNeighborhood(userIndex, fileNeighborhood, k);
+
+			int q = Integer.parseInt(args[7]);
+
+			UserNeighborhood<Long> userNeighborhood = new UserNeighborhood<Long>(userIndex, fileUserNeighborhood) {
+			};
+
+			Recommender<Long, Long> recommender = new UserNeighborhoodRecommender<Long, Long>(trainData,
+					userNeighborhood, q);
+
+			String outfile = args[8];
+			generateRecommendations(recommender, outfile, userIndex, itemIndex, trainData, testData, NUM_RECS_PER_USER);
+		}
+			break;
+
 		default:
 			System.out.println("Parameters not recognized, try split/ub/eval as first parameter");
 			break;
@@ -246,7 +284,8 @@ public class Experiment {
 	}
 
 	public static UserSimilarity<Long> userSimilarityFactory(FastUserIndex<Long> userIndex,
-			FastItemIndex<Long> itemIndex, FastPreferenceData<Long, Long> trainData, double alpha, boolean dense, String simName) throws IOException {
+			FastItemIndex<Long> itemIndex, FastPreferenceData<Long, Long> trainData, double alpha, boolean dense,
+			String simName) throws IOException {
 		UserSimilarity<Long> sim = null;
 		switch (simName) {
 		case "cosine":
