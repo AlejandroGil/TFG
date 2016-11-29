@@ -56,7 +56,7 @@ public class Experiment {
 
 	public static void main(String[] args) throws Exception {
 		
-		args = new String[]{"out_neighs", "src/main/resources/ml-100k/users.txt", "src/main/resources/ml-100k/items.txt", "src/main/resources/ml-100k/u1.base", "u1.base__cosine_neighbors.txt", "cosine", "false", "500", "0"};
+		//args = new String[]{"out_neighs", "src/main/resources/ml-100k/users.txt", "src/main/resources/ml-100k/items.txt", "src/main/resources/ml-100k/u1.base", "u1.base__cosine_neighbors.txt", "cosine", "false", "500", "0"};
 
 		if (args.length == 0) {
 			System.out.println("Parameters incorrect -> try split/ub/eval as first parameter");
@@ -123,7 +123,7 @@ public class Experiment {
 			boolean dense = false;
 
 			String simName = args[6];
-			UserSimilarity<Long> sim = userSimilarityFactory(userIndex, itemIndex, trainData, alpha, k, q, norm, dense,
+			UserSimilarity<Long> sim = userSimilarityFactory(userIndex, itemIndex, trainData, alpha, dense,
 					simName);
 
 			UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
@@ -155,7 +155,7 @@ public class Experiment {
 			break;
 
 		case "out_neighs": {
-			System.out.println("Parameters: out_neighs userPath itemPath trainData outfile sim norm k q [alpha]");
+			System.out.println("Parameters: out_neighs userPath itemPath trainData outfile sim k [alpha]");
 			String userPath = args[1];
 			String itemPath = args[2];
 			String trainDataPath = args[3];
@@ -171,18 +171,16 @@ public class Experiment {
 
 			double alpha = 0.5;
 			try {
-				alpha = Double.parseDouble(args[9]);
+				alpha = Double.parseDouble(args[7]);
 			} catch (Exception e) {
 				// nothing
 			}
-			int k = Integer.parseInt(args[7]);
-			int q = Integer.parseInt(args[8]);
-			boolean norm = Boolean.parseBoolean(args[6]);
+			int k = Integer.parseInt(args[6]);
 
 			boolean dense = false;
 
 			String simName = args[5];
-			UserSimilarity<Long> sim = userSimilarityFactory(userIndex, itemIndex, trainData, alpha, k, q, norm, dense,
+			UserSimilarity<Long> sim = userSimilarityFactory(userIndex, itemIndex, trainData, alpha, dense,
 					simName);
 			UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
 
@@ -248,8 +246,7 @@ public class Experiment {
 	}
 
 	public static UserSimilarity<Long> userSimilarityFactory(FastUserIndex<Long> userIndex,
-			FastItemIndex<Long> itemIndex, FastPreferenceData<Long, Long> trainData, double alpha, int k, int q,
-			boolean norm, boolean dense, String simName) throws IOException {
+			FastItemIndex<Long> itemIndex, FastPreferenceData<Long, Long> trainData, double alpha, boolean dense, String simName) throws IOException {
 		UserSimilarity<Long> sim = null;
 		switch (simName) {
 		case "cosine":
