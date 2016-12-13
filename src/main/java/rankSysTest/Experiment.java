@@ -159,6 +159,7 @@ public class Experiment {
 		}
 			break;
 
+			/*Write neighbours to outfile*/
 		case "out_neighs": {
 			System.out.println("Parameters: out_neighs userPath itemPath trainData outfile sim k [alpha]");
 			String userPath = args[1];
