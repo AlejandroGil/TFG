@@ -59,9 +59,12 @@ public class NMSLibNeighborhood<T> implements Neighborhood {
 	@Override
 	public Stream<Tuple2id> getNeighbors(int idx) {
 		if (client != null) {
-			T target = transformation.getIdFromIndex(idx);
+			//T target = transformation.getIdFromIndex(idx);
+			T target = transformation.getIdFromRankSys(idx);
 			double[] vector = transformation.transform(target);
-			String queryObj = Arrays.asList(vector).stream().map(Object::toString).collect(Collectors.joining("\t"));
+			//String queryObj = Arrays.asList(vector).stream().map(Object::toString).collect(Collectors.joining("\t"));
+			String queryObj = Arrays.stream(vector).mapToObj(Double::toString).collect(Collectors.joining("\t"));
+			//System.out.println("Query:" + queryObj);
 			List<Tuple2id> neighbors = new ArrayList<>();
 			try {
 				List<ReplyEntry> res = client.knnQuery(k + 1, queryObj, false, false);

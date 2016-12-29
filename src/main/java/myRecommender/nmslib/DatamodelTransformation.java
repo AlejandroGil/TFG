@@ -61,6 +61,12 @@ public class DatamodelTransformation<T> {
 		return indexIdMapping.get(idx);
 	}
 
+	public T getIdFromRankSys(int idx) {
+		T id = null;
+		id = idRanksysIndexMapping.entrySet().stream().filter(e -> e.getValue() == idx).findFirst().get().getKey();
+		return id;
+	}
+
 	public Integer getRankSysIndex(T id) {
 		return idRanksysIndexMapping.get(id);
 	}
