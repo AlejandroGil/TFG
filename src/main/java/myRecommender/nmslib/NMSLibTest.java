@@ -9,6 +9,7 @@ import org.ranksys.formats.index.ItemsReader;
 import org.ranksys.formats.index.UsersReader;
 import org.ranksys.formats.preference.SimpleRatingPreferencesReader;
 
+import cern.colt.Arrays;
 import es.uam.eps.ir.ranksys.fast.index.FastItemIndex;
 import es.uam.eps.ir.ranksys.fast.index.FastUserIndex;
 import es.uam.eps.ir.ranksys.fast.index.SimpleFastItemIndex;
@@ -19,6 +20,7 @@ import es.uam.eps.ir.ranksys.nn.item.neighborhood.ItemNeighborhood;
 import es.uam.eps.ir.ranksys.nn.neighborhood.Neighborhood;
 import es.uam.eps.ir.ranksys.nn.user.UserNeighborhoodRecommender;
 import es.uam.eps.ir.ranksys.nn.user.neighborhood.UserNeighborhood;
+import es.uam.eps.ir.ranksys.rec.Recommender;
 
 public class NMSLibTest {
 
@@ -31,9 +33,14 @@ public class NMSLibTest {
 		args = new String[]{"generate_transformation", "src/main/resources/ml-100k/u1.base", "src/main/resources/ml-100k/users.txt", "src/main/resources/ml-100k/items.txt",
 				"0.0", "false"};
 		*/
+		/*
 		args = new String[]{"ubrec", "src/main/resources/ml-100k/u1.base", "src/main/resources/ml-100k/users.txt", "src/main/resources/ml-100k/items.txt",
 				"0.0", "true",
 				"20", "localhost", "10000"};
+		*/
+		args = new String[]{"ubrec", "src/main/resources/ml-100k/u1.base", "src/main/resources/ml-100k/users.txt", "src/main/resources/ml-100k/items.txt",
+				"0.0", "true",
+				"20", "ir.ii.uam.es", "10002"};
 
 		String trainDataPath = args[1];
 		String userPath = args[2];
@@ -68,7 +75,9 @@ public class NMSLibTest {
 			UserNeighborhood<Long> neighborhood = new UserNeighborhood<Long>(data, n) {
 			};
 
-			new UserNeighborhoodRecommender<>(data, neighborhood, 1);
+			//System.out.println(Arrays.toString(t.transform(1L)));
+			Recommender<Long, Long> r = new UserNeighborhoodRecommender<>(data, neighborhood, 1);
+			r.getRecommendation(1L, 15).getItems().stream().forEach(e -> System.out.println(e.v1 + ":" + e.v2));
 		}
 			break;
 
