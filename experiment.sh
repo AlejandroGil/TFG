@@ -13,7 +13,7 @@ do
   do
     for transform in STD MD Z
     do
-      for normalize in false
+      for normalize in false true
       do
         for sim in cosine cosine_th_0.3 cosine_th_0.5 jaccard jaccard_th_0.3 jaccard_th_0.5 pearson pearsoncn pearson_th_0 pearsoncn_th_0 pearson_th_0.5 pearsoncn_th_0.5
         do
