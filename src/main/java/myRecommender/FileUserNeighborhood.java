@@ -34,6 +34,7 @@ public class FileUserNeighborhood implements Neighborhood {
 			// or: userid \t n1,n2,...
 			String[] toks = line.split("\t");
 			Long userid = Long.parseLong(toks[0]);
+			int useridInt = Integer.parseInt(toks[0]);
 			int uidx = uIndex.user2uidx(userid);
 
 			List<String> temp = Arrays.asList(toks[1].split(",")).stream().limit(k).map(String::trim)
@@ -48,6 +49,7 @@ public class FileUserNeighborhood implements Neighborhood {
 					// if similarity is not stored in file, then we use the ranking of the neighbors: sim = 1 / rank
 					neighbors.add(new Tuple2id(uIndex.user2uidx(Long.parseLong(s)), 1.0 / (idx + 1)));
 				}
+				neighborsFromFile.put(useridInt, neighbors);
 			});
 		}
 		in.close();
