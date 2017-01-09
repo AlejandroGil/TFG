@@ -18,9 +18,9 @@ do
         for sim in cosine cosine_th_0.3 cosine_th_0.5 jaccard jaccard_th_0.3 jaccard_th_0.5 pearson pearsoncn pearson_th_0 pearsoncn_th_0 pearson_th_0.5 pearsoncn_th_0.5
         do
           #Parameters: ub userPath itemPath trainData testData outfile sim transf norm k q [alpha]
-          java -jar experiment.jar ub $usersPath $itemsPath $trainPath $testPath ub\_$sim\_$normalize\_$transform\_$kfold$fold $sim $transform $normalize $k $q
+          java -jar experiment.jar ub $usersPath $itemsPath $trainPath $testPath ub\_$sim\_$normalize\_$transform\_$k\_fold$fold $sim $transform $normalize $k $q
           #Parameters: eval recfile testdata outfile
-          java -jar experiment.jar eval ub\_$sim\_$normalize\_$transform\_$k\_fold\_$fold $testPath eval_ub\_$sim\_$normalize\_$transform\_$k\_fold$fold
+          java -jar experiment.jar eval ub\_$sim\_$normalize\_$transform\_$k\_fold$fold $testPath $testPath eval_ub\_$sim\_$normalize\_$transform\_$k\_fold$fold
         done
       done
     done
