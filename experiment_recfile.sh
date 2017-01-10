@@ -15,9 +15,9 @@ do
     for lp in 1 2
     do
       #Parameters: recFile userPath itemPath trainData testData neighFile k q outfile
-      java -jar experiment.jar recfile $userPath $itemPath $trainPath $testPath $trainPath\_l$lp\_NMSLIB_neighbors.txt k q recfile\_$trainPath\_l$lp\_NMSLIB_neighbors.txt
+      java -jar experiment.jar recFile $usersPath $itemsPath $trainPath $testPath $trainPath\_l$lp\_NMSLIB_neighbors.txt $k $q recfile\_$trainPath\_l$lp\_NMSLIB_neighbors.txt
       #Parameters: eval recfile testdata outfile
-      java -jar experiment.jar eval recfile\_$trainPath\_l$lp\_NMSLIB_neighbors.txt $testPath eval_recfile\_$trainPath\_$lp\_NMSLIB_neighbors.txt
+      java -jar experiment.jar eval recfile\_$trainPath\_l$lp\_NMSLIB_neighbors.txt $testPath eval_recfile\_$trainPath\_l$lp\_NMSLIB_neighbors.txt
     done
   done
 done

@@ -76,8 +76,14 @@ public class Experiment {
 				System.exit(0);
 			}
 		} else if (args[0].equals("eval")) {
-			if (args.length != 5) {
-				System.out.println("Parameters incorrect -> eval recfile traindata testdata outfile");
+			if (args.length != 4) {
+				System.out.println("Parameters incorrect -> eval recfile testdata outfile");
+				System.exit(0);
+			}
+			
+		} else if (args[0].equals("recFile")) {
+			if (args.length != 9) {
+				System.out.println("Parameters incorrect -> recFile userPath itemPath trainData testData neighFile k q outfile");
 				System.exit(0);
 			}
 		} else if (args[0].equals("out_neighs")) {
