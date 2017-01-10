@@ -3,7 +3,7 @@
 usersPath="users.txt"
 itemsPath="items.txt"
 q=1
-
+ini=`date`
 #generating recommendations
 for fold in 1 2 3 4 5
 do
@@ -26,3 +26,6 @@ do
     done
   done
 done
+fin=`date`
+echo "Inicio: " $ini
+echo "Fin: " $fin
