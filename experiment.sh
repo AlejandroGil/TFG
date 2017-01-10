@@ -11,7 +11,7 @@ do
   testPath=u$fold.test
   for k in 5 10 20 40 60 100
   do
-    for transform in STD MD Z
+    for transform in STD MC Z
     do
       for normalize in false true
       do
