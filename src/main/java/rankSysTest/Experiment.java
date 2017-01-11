@@ -20,6 +20,7 @@ import org.ranksys.formats.preference.SimpleRatingPreferencesReader;
 import org.ranksys.formats.rec.RecommendationFormat;
 import org.ranksys.formats.rec.SimpleRecommendationFormat;
 
+import cern.colt.Arrays;
 import es.uam.eps.ir.ranksys.core.preference.PreferenceData;
 import es.uam.eps.ir.ranksys.core.preference.SimplePreferenceData;
 import es.uam.eps.ir.ranksys.fast.index.FastItemIndex;
@@ -35,6 +36,11 @@ import es.uam.eps.ir.ranksys.metrics.basic.NDCG;
 import es.uam.eps.ir.ranksys.metrics.basic.Precision;
 import es.uam.eps.ir.ranksys.metrics.basic.Recall;
 import es.uam.eps.ir.ranksys.metrics.rel.BinaryRelevanceModel;
+import es.uam.eps.ir.ranksys.nn.item.neighborhood.ItemNeighborhood;
+import es.uam.eps.ir.ranksys.nn.item.neighborhood.TopKItemNeighborhood;
+import es.uam.eps.ir.ranksys.nn.item.sim.ItemSimilarity;
+import es.uam.eps.ir.ranksys.nn.item.sim.VectorCosineItemSimilarity;
+import es.uam.eps.ir.ranksys.nn.item.sim.VectorJaccardItemSimilarity;
 import es.uam.eps.ir.ranksys.nn.user.UserNeighborhoodRecommender;
 import es.uam.eps.ir.ranksys.nn.user.neighborhood.TopKUserNeighborhood;
 import es.uam.eps.ir.ranksys.nn.user.neighborhood.UserNeighborhood;
@@ -46,10 +52,13 @@ import es.uam.eps.ir.ranksys.rec.runner.RecommenderRunner;
 import es.uam.eps.ir.ranksys.rec.runner.fast.FastFilterRecommenderRunner;
 import es.uam.eps.ir.ranksys.rec.runner.fast.FastFilters;
 import myRecommender.FileUserNeighborhood;
+import myRecommender.MyItemNeighborhoodRecommender;
 import myRecommender.MyUserNeighborhoodRecommender;
 import myRecommender.MyUserNeighborhoodRecommender.TRANSFORM;
+import myRecommender.PearsonItemSimilarity;
 import myRecommender.PearsonSimilarity;
 import myRecommender.PearsonUserSimilarity;
+import myRecommender.ThresholdItemSimilarity;
 import myRecommender.ThresholdUserSimilarity;
 
 public class Experiment {
@@ -63,7 +72,47 @@ public class Experiment {
 		// "src/main/resources/ml-100k/items.txt",
 		// "src/main/resources/ml-100k/u1.base",
 		// "u1.base__cosine_neighbors.txt", "cosine", "false", "500", "0"};
-
+//		 args = new String[]{"ub", "ml100k_fold1/users.txt", "ml100k_fold1/items.txt", 
+//				 "ml100k_fold1/u1.base", "ml100k_fold1/u1.test", "outfile", 
+//				 "pearson", "MC", "false", "10", "1"};
+//		 args = new String[]{"ub", "ml100k_fold1/users.txt", "ml100k_fold1/items.txt", 
+//				 "ml100k_fold1/u1.base", "ml100k_fold1/u1.test", "outfile", 
+//				 "pearson", "MC", "true", "10", "1"};
+//		 args = new String[]{"ib", "ml100k_fold1/users.txt", "ml100k_fold1/items.txt", 
+//		 "ml100k_fold1/u1.base", "ml100k_fold1/u1.test", "outfile", 
+//		 "cosine", "MC", "false", "10", "1"};
+		 /*
+Parameters: ib userPath itemPath trainData testData outfile sim transf norm k q [alpha]
+[ib, ml100k_fold1/users.txt, ml100k_fold1/items.txt, ml100k_fold1/u1.base, ml100k_fold1/u1.test, outfile, cosine, MC, false, 10, 1]
+204	8.886177462292023
+210	8.702288349244071
+181	7.861169637726846
+121	7.392893565113512
+7	7.100310895591274
+222	6.700401787567069
+202	6.665279169064912
+116	6.1728696173208935
+195	6.082811471426397
+1	6.040182209659408
+		  * */
+//		 args = new String[]{"ib", "ml100k_fold1/users.txt", "ml100k_fold1/items.txt", 
+//		 "ml100k_fold1/u1.base", "ml100k_fold1/u1.test", "outfile", 
+//		 "cosine", "MC", "true", "10", "1"};
+		 /*
+Parameters: ib userPath itemPath trainData testData outfile sim transf norm k q [alpha]
+[ib, ml100k_fold1/users.txt, ml100k_fold1/items.txt, ml100k_fold1/u1.base, ml100k_fold1/u1.test, outfile, cosine, MC, true, 10, 1]
+1293	4.997113787248532
+1449	4.714467574630627
+408	4.559544630572734
+1642	4.499703727793892
+318	4.489037363225084
+483	4.440139016827725
+64	4.4153873584436125
+12	4.396104946421413
+50	4.361916214024171
+114	4.356004609717227
+		  * */
+		
 		if (args.length == 0) {
 			System.out.println("Parameters incorrect -> try split/ub/eval as first parameter");
 			System.exit(0);
@@ -107,6 +156,7 @@ public class Experiment {
 		case "ub": {
 			System.out
 					.println("Parameters: ub userPath itemPath trainData testData outfile sim transf norm k q [alpha]");
+			System.out.println(Arrays.toString(args));
 			String userPath = args[1];
 			String itemPath = args[2];
 			String trainDataPath = args[3];
@@ -159,6 +209,70 @@ public class Experiment {
 			Recommender<Long, Long> recommender = new MyUserNeighborhoodRecommender<>(trainData, neighborhood, q, sim,
 					tr, norm);
 			String outfile = args[5];
+//			recommender.getRecommendation(1L, 10).getItems().forEach(i -> System.out.println(i.v1 + "\t" + i.v2));
+			generateRecommendations(recommender, outfile, userIndex, itemIndex, trainData, testData, NUM_RECS_PER_USER);
+			// en script, variar: fold (5), k (5, 10, 20, 40, 60, 100), tr (3),
+			// norm (2), sim (12)
+		}
+			break;
+
+		case "ib": {
+			System.out
+					.println("Parameters: ib userPath itemPath trainData testData outfile sim transf norm k q [alpha]");
+			System.out.println(Arrays.toString(args));
+			String userPath = args[1];
+			String itemPath = args[2];
+			String trainDataPath = args[3];
+			String testDataPath = args[4];
+
+			/* Loading user and item indexes ("0", "1", "2"... etc) */
+			FastUserIndex<Long> userIndex = SimpleFastUserIndex.load(UsersReader.read(userPath, lp));
+			FastItemIndex<Long> itemIndex = SimpleFastItemIndex.load(ItemsReader.read(itemPath, lp));
+
+			/* Reading rating file */
+			FastPreferenceData<Long, Long> trainData = SimpleFastPreferenceData
+					.load(SimpleRatingPreferencesReader.get().read(trainDataPath, lp, lp), userIndex, itemIndex);
+			FastPreferenceData<Long, Long> testData = SimpleFastPreferenceData
+					.load(SimpleRatingPreferencesReader.get().read(testDataPath, lp, lp), userIndex, itemIndex);
+
+			double alpha = 0.5;
+			try {
+				alpha = Double.parseDouble(args[11]);
+			} catch (Exception e) {
+				// nothing
+			}
+			int k = Integer.parseInt(args[9]);
+			int q = Integer.parseInt(args[10]);
+			boolean norm = Boolean.parseBoolean(args[8]);
+
+			boolean dense = false;
+
+			String simName = args[6];
+			ItemSimilarity<Long> sim = itemSimilarityFactory(userIndex, itemIndex, trainData, alpha, dense, simName);
+
+			ItemNeighborhood<Long> neighborhood = new TopKItemNeighborhood<>(sim, k);
+			TRANSFORM tr = null;
+			switch (args[7]) {
+			case "MC":
+				tr = TRANSFORM.MC;
+				break;
+
+			case "STD":
+				tr = TRANSFORM.STD;
+				break;
+
+			case "Z":
+				tr = TRANSFORM.Z;
+				break;
+
+			default:
+				break;
+			}
+
+			Recommender<Long, Long> recommender = new MyItemNeighborhoodRecommender<>(trainData, neighborhood, q, sim,
+					tr, norm);
+			String outfile = args[5];
+//			recommender.getRecommendation(1L, 10).getItems().forEach(i -> System.out.println(i.v1 + "\t" + i.v2));
 			generateRecommendations(recommender, outfile, userIndex, itemIndex, trainData, testData, NUM_RECS_PER_USER);
 			// en script, variar: fold (5), k (5, 10, 20, 40, 60, 100), tr (3),
 			// norm (2), sim (12)
@@ -337,6 +451,62 @@ public class Experiment {
 			break;
 		case "pearsoncn_th_0.5":
 			sim = new ThresholdUserSimilarity<>(trainData, new PearsonSimilarity(trainData, dense, 0.0, true), 0.5,
+					1.0);
+			break;
+		default:
+			break;
+		}
+
+		return sim;
+	}
+
+	public static ItemSimilarity<Long> itemSimilarityFactory(FastUserIndex<Long> userIndex,
+			FastItemIndex<Long> itemIndex, FastPreferenceData<Long, Long> trainData, double alpha, boolean dense,
+			String simName) throws IOException {
+		ItemSimilarity<Long> sim = null;
+		switch (simName) {
+		case "cosine":
+			sim = new VectorCosineItemSimilarity<>(trainData, alpha, dense);
+			break;
+		case "cosine_th_0.3":
+			sim = new ThresholdItemSimilarity<>(trainData, new VectorCosineItemSimilarity<>(trainData, alpha, dense),
+					0.3, 1.0);
+			break;
+		case "cosine_th_0.5":
+			sim = new ThresholdItemSimilarity<>(trainData, new VectorCosineItemSimilarity<>(trainData, alpha, dense),
+					0.5, 1.0);
+			break;
+		case "jaccard":
+			sim = new VectorJaccardItemSimilarity<>(trainData, dense);
+			break;
+		case "jaccard_th_0.3":
+			sim = new ThresholdItemSimilarity<>(trainData, new VectorJaccardItemSimilarity<>(trainData, dense), 0.3,
+					1.0);
+			break;
+		case "jaccard_th_0.5":
+			sim = new ThresholdItemSimilarity<>(trainData, new VectorJaccardItemSimilarity<>(trainData, dense), 0.5,
+					1.0);
+			break;
+		case "pearson":
+			sim = new PearsonItemSimilarity<>(trainData, dense, -1.0, false);
+			break;
+		case "pearsoncn":
+			sim = new PearsonItemSimilarity<>(trainData, dense, -1.0, true);
+			break;
+		case "pearson_th_0":
+			sim = new ThresholdItemSimilarity<>(trainData, new PearsonSimilarity(trainData, dense, 0.0, false), 0.0,
+					1.0);
+			break;
+		case "pearsoncn_th_0":
+			sim = new ThresholdItemSimilarity<>(trainData, new PearsonSimilarity(trainData, dense, 0.0, true), 0.0,
+					1.0);
+			break;
+		case "pearson_th_0.5":
+			sim = new ThresholdItemSimilarity<>(trainData, new PearsonSimilarity(trainData, dense, 0.0, false), 0.5,
+					1.0);
+			break;
+		case "pearsoncn_th_0.5":
+			sim = new ThresholdItemSimilarity<>(trainData, new PearsonSimilarity(trainData, dense, 0.0, true), 0.5,
 					1.0);
 			break;
 		default:
