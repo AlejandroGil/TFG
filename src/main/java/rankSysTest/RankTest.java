@@ -59,10 +59,10 @@ public class RankTest {
 
 	public static void main(String[] args) throws IOException {
 
-		String userPath = "src/main/resources/ml-100k/users.txt";
-        String itemPath = "src/main/resources/ml-100k/items.txt";
-        String trainDataPath = "src/main/resources/ml-100k/u5.base";
-        String testDataPath = "src/main/resources/ml-100k/u5.test";
+		String userPath = "usersPC.txt";//"src/main/resources/ml-100k/users.txt";
+        String itemPath = "itemsPC.txt";//"src/main/resources/ml-100k/items.txt";
+        String trainDataPath = "pc.base";//"src/main/resources/ml-100k/u5.base";
+        String testDataPath = "pc.test";//"src/main/resources/ml-100k/u5.test";
 
         /*Loading user and item indexes ("0", "1", "2"... etc)*/
         FastUserIndex<Long> userIndex = SimpleFastUserIndex.load(UsersReader.read(userPath, lp));
@@ -191,9 +191,10 @@ public class RankTest {
             UserSimilarity<Long> sim = new PearsonUserSimilarity<>(trainData, false, 0, true);
             UserNeighborhood<Long> neighborhood = new TopKUserNeighborhood<>(sim, k);
 
-            //trainData.getUidxPreferences(0).forEach(p->System.out.println("0,"+p.v1+","+p.v2));
-            //trainData.getUidxPreferences(1).forEach(p->System.out.println("1,"+p.v1+","+p.v2));
-            //System.out.println(sim.similarity(0, 1));
+            trainData.getUidxPreferences(0).forEach(p->System.out.println("0,"+p.v1+","+p.v2));
+            trainData.getUidxPreferences(1).forEach(p->System.out.println("1,"+p.v1+","+p.v2));
+            System.out.println(sim.similarity(0, 1));
+            System.out.println(sim.similarity(0, 2));
 
             return new UserNeighborhoodRecommender<>(trainData, neighborhood, q);
         });

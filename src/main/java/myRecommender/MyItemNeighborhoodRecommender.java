@@ -15,14 +15,14 @@ import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 import myRecommender.MyUserNeighborhoodRecommender.TRANSFORM;
 /**
  * Item-based nearest neighbors recommender.
- * 
+ *
  * F. Aiolli. Efficient Top-N Recommendation for Very Large Scale Binary Rated
  * Datasets. RecSys 2013.
- * 
- * Paolo Cremonesi, Yehuda Koren, and Roberto Turrin. Performance of 
+ *
+ * Paolo Cremonesi, Yehuda Koren, and Roberto Turrin. Performance of
  * recommender algorithms on top-n recommendation tasks. RecSys 2010.
- * 
- * C. Desrosiers, G. Karypis. A comprehensive survey of neighborhood-based 
+ *
+ * C. Desrosiers, G. Karypis. A comprehensive survey of neighborhood-based
  * recommendation methods. Recommender Systems Handbook.
  *
  * @author Alejandro Gil
@@ -31,7 +31,7 @@ import myRecommender.MyUserNeighborhoodRecommender.TRANSFORM;
  * @param <I> type of the items
  */
 public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<U, I> {
-	
+
 	protected TRANSFORM t;
     /**
      * Preference data.
@@ -42,15 +42,15 @@ public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<
      * User neighborhood.
      */
     protected final ItemNeighborhood<U> neighborhood;
-    
-    
+
+
     protected final ItemSimilarity<U> similarity;
 
     /**
      * Exponent of the similarity.
      */
     protected final int q;
-    
+
     /*Map containing the ratings of the users to calculate means and deviations*/
     protected Map<Integer, Stats> stats;
     protected boolean normalize;
@@ -68,11 +68,11 @@ public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<
         this.data = data;
         this.neighborhood = neighborhood;
         this.q = q;
-        
+
         this.similarity = sim;
         this.normalize = normalize;
         this.t = std;
-        
+
         stats = new HashMap<>();
         data.getAllIidx().forEach(iIndex -> {
             Stats s = new  Stats();
@@ -81,7 +81,7 @@ public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<
                 s.accept(p.v2);
             });
         });
-        
+
     }
 
     /**
@@ -98,16 +98,16 @@ public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<
         scoresMap.defaultReturnValue(0.0);
         Int2DoubleOpenHashMap count = new Int2DoubleOpenHashMap();
         count.defaultReturnValue(0.0);
-        
+
         data.getUidxPreferences(uidx).forEach(jp -> {
         	int i = jp.v1;
 
         	neighborhood.getNeighbors(i).forEach(is -> {
             	int j = is.v1;
-            	System.out.println("Asking similarity for items " + i + " and " + j + " -> " + data.iidx2item(i) + " and " + data.iidx2item(j));
+            	//System.out.println("Asking similarity for items " + i + " and " + j + " -> " + data.iidx2item(i) + " and " + data.iidx2item(j));
             	double sim = similarity.similarity(i, j);
-            	System.out.println("Similarity found: " + sim);
-            	
+            	//System.out.println("Similarity found: " + sim);
+
                 double w = pow(sim, q);
                 cMap.addTo(1, Math.abs(w));
 
@@ -149,7 +149,7 @@ public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<
     			t1 = 0.0;
     			break;
     		}
-            
+
             double t2 = 1.0;
         	switch (t) {
     		case STD:
@@ -163,9 +163,9 @@ public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<
     		default:
     			break;
     		}
-        	
+
             final double b = normalize ? t2 / cMap.get(1) : t2;
-        	
+
         	double s = t1 + b * v;
         	scoresMap2.addTo(i, s);
         });
