@@ -173,6 +173,10 @@ public class MyUserNeighborhoodRecommender<U, I> extends FastRankingRecommender<
         	double s = a + b * v;
         	scoresMap2.addTo(k, s);
         });
+//        System.out.println(a);
+//        System.out.println(b);
+//        System.out.println(scoresMap);
+//        System.out.println(scoresMap2);
 
         return scoresMap2;
     }    
