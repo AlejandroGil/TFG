@@ -67,6 +67,7 @@ public class Experiment {
 
 	public static void main(String[] args) throws Exception {
 
+		boolean debug = false;
 		// args = new String[]{"out_neighs",
 		// "src/main/resources/ml-100k/users.txt",
 		// "src/main/resources/ml-100k/items.txt",
@@ -81,37 +82,9 @@ public class Experiment {
 //		 args = new String[]{"ib", "ml100k_fold1/users.txt", "ml100k_fold1/items.txt", 
 //		 "ml100k_fold1/u1.base", "ml100k_fold1/u1.test", "outfile", 
 //		 "cosine", "MC", "false", "10", "1"};
-		 /*
-Parameters: ib userPath itemPath trainData testData outfile sim transf norm k q [alpha]
-[ib, ml100k_fold1/users.txt, ml100k_fold1/items.txt, ml100k_fold1/u1.base, ml100k_fold1/u1.test, outfile, cosine, MC, false, 10, 1]
-204	8.886177462292023
-210	8.702288349244071
-181	7.861169637726846
-121	7.392893565113512
-7	7.100310895591274
-222	6.700401787567069
-202	6.665279169064912
-116	6.1728696173208935
-195	6.082811471426397
-1	6.040182209659408
-		  * */
 //		 args = new String[]{"ib", "ml100k_fold1/users.txt", "ml100k_fold1/items.txt", 
 //		 "ml100k_fold1/u1.base", "ml100k_fold1/u1.test", "outfile", 
-//		 "cosine", "MC", "true", "10", "1"};
-		 /*
-Parameters: ib userPath itemPath trainData testData outfile sim transf norm k q [alpha]
-[ib, ml100k_fold1/users.txt, ml100k_fold1/items.txt, ml100k_fold1/u1.base, ml100k_fold1/u1.test, outfile, cosine, MC, true, 10, 1]
-1293	4.997113787248532
-1449	4.714467574630627
-408	4.559544630572734
-1642	4.499703727793892
-318	4.489037363225084
-483	4.440139016827725
-64	4.4153873584436125
-12	4.396104946421413
-50	4.361916214024171
-114	4.356004609717227
-		  * */
+//		 "pearson", "MC", "true", "10", "1"};
 		
 		if (args.length == 0) {
 			System.out.println("Parameters incorrect -> try split/ub/eval as first parameter");
@@ -209,8 +182,11 @@ Parameters: ib userPath itemPath trainData testData outfile sim transf norm k q 
 			Recommender<Long, Long> recommender = new MyUserNeighborhoodRecommender<>(trainData, neighborhood, q, sim,
 					tr, norm);
 			String outfile = args[5];
-//			recommender.getRecommendation(1L, 10).getItems().forEach(i -> System.out.println(i.v1 + "\t" + i.v2));
-			generateRecommendations(recommender, outfile, userIndex, itemIndex, trainData, testData, NUM_RECS_PER_USER);
+			if(debug){
+				recommender.getRecommendation(1L, 10).getItems().forEach(i -> System.out.println(i.v1 + "\t" + i.v2));
+			}else{
+				generateRecommendations(recommender, outfile, userIndex, itemIndex, trainData, testData, NUM_RECS_PER_USER);
+			}
 			// en script, variar: fold (5), k (5, 10, 20, 40, 60, 100), tr (3),
 			// norm (2), sim (12)
 		}
@@ -272,8 +248,11 @@ Parameters: ib userPath itemPath trainData testData outfile sim transf norm k q 
 			Recommender<Long, Long> recommender = new MyItemNeighborhoodRecommender<>(trainData, neighborhood, q, sim,
 					tr, norm);
 			String outfile = args[5];
-//			recommender.getRecommendation(1L, 10).getItems().forEach(i -> System.out.println(i.v1 + "\t" + i.v2));
-			generateRecommendations(recommender, outfile, userIndex, itemIndex, trainData, testData, NUM_RECS_PER_USER);
+			if(debug){
+				recommender.getRecommendation(1L, 10).getItems().forEach(i -> System.out.println(i.v1 + "\t" + i.v2));
+			}else{
+				generateRecommendations(recommender, outfile, userIndex, itemIndex, trainData, testData, NUM_RECS_PER_USER);
+			}
 			// en script, variar: fold (5), k (5, 10, 20, 40, 60, 100), tr (3),
 			// norm (2), sim (12)
 		}
