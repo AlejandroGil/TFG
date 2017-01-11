@@ -14,7 +14,7 @@ import it.unimi.dsi.fastutil.ints.Int2DoubleMap;
 import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 import myRecommender.MyUserNeighborhoodRecommender.TRANSFORM;
 /**
- * User-based nearest neighbors recommender.
+ * Item-based nearest neighbors recommender.
  * 
  * F. Aiolli. Efficient Top-N Recommendation for Very Large Scale Binary Rated
  * Datasets. RecSys 2013.
@@ -104,7 +104,9 @@ public class MyItemNeighborhoodRecommender<U, I> extends FastRankingRecommender<
 
         	neighborhood.getNeighbors(i).forEach(is -> {
             	int j = is.v1;
+            	System.out.println("Asking similarity for items " + i + " and " + j + " -> " + data.iidx2item(i) + " and " + data.iidx2item(j));
             	double sim = similarity.similarity(i, j);
+            	System.out.println("Similarity found: " + sim);
             	
                 double w = pow(sim, q);
                 cMap.addTo(1, Math.abs(w));
