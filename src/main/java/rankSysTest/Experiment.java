@@ -29,6 +29,7 @@ import es.uam.eps.ir.ranksys.fast.index.SimpleFastItemIndex;
 import es.uam.eps.ir.ranksys.fast.index.SimpleFastUserIndex;
 import es.uam.eps.ir.ranksys.fast.preference.FastPreferenceData;
 import es.uam.eps.ir.ranksys.fast.preference.SimpleFastPreferenceData;
+import es.uam.eps.ir.ranksys.fast.preference.TransposedPreferenceData;
 import es.uam.eps.ir.ranksys.metrics.RecommendationMetric;
 import es.uam.eps.ir.ranksys.metrics.SystemMetric;
 import es.uam.eps.ir.ranksys.metrics.basic.AverageRecommendationMetric;
@@ -473,19 +474,19 @@ public class Experiment {
 			sim = new PearsonItemSimilarity<>(trainData, dense, -1.0, true);
 			break;
 		case "pearson_th_0":
-			sim = new ThresholdItemSimilarity<>(trainData, new PearsonSimilarity(trainData, dense, 0.0, false), 0.0,
+			sim = new ThresholdItemSimilarity<>(trainData, new PearsonSimilarity(new TransposedPreferenceData<>(trainData), dense, 0.0, false), 0.0,
 					1.0);
 			break;
 		case "pearsoncn_th_0":
-			sim = new ThresholdItemSimilarity<>(trainData, new PearsonSimilarity(trainData, dense, 0.0, true), 0.0,
+			sim = new ThresholdItemSimilarity<>(trainData, new PearsonSimilarity(new TransposedPreferenceData<>(trainData), dense, 0.0, true), 0.0,
 					1.0);
 			break;
 		case "pearson_th_0.5":
-			sim = new ThresholdItemSimilarity<>(trainData, new PearsonSimilarity(trainData, dense, 0.0, false), 0.5,
+			sim = new ThresholdItemSimilarity<>(trainData, new PearsonSimilarity(new TransposedPreferenceData<>(trainData), dense, 0.0, false), 0.5,
 					1.0);
 			break;
 		case "pearsoncn_th_0.5":
-			sim = new ThresholdItemSimilarity<>(trainData, new PearsonSimilarity(trainData, dense, 0.0, true), 0.5,
+			sim = new ThresholdItemSimilarity<>(trainData, new PearsonSimilarity(new TransposedPreferenceData<>(trainData), dense, 0.0, true), 0.5,
 					1.0);
 			break;
 		default:
