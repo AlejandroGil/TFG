@@ -1,4 +1,4 @@
-package myRecommender;
+package myRecommender.nmslib;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,6 +19,11 @@ import org.ranksys.core.util.tuples.Tuple2id;
 import es.uam.eps.ir.ranksys.fast.index.FastUserIndex;
 import es.uam.eps.ir.ranksys.nn.neighborhood.Neighborhood;
 
+/**
+ * 
+ * @author alejandrogil
+ * Class to read neighbourhood from file
+ */
 public class FileUserNeighborhood implements Neighborhood {
 
 	private Map<Integer, List<Tuple2id>> neighborsFromFile;

@@ -1,4 +1,4 @@
-package myRecommender;
+package myRecommender.nmslib;
 
 import static org.ranksys.formats.parsing.Parsers.lp;
 

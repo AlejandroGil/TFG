@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package myRecommender;
+package myRecommender.nmslib;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -22,6 +22,7 @@ import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 /**
  *
  * @author alejandrogil
+ * Class to know common neighbours between both techniques (NMSLIB vs similarity)
  */
 public class CompareNeighbours {
 
