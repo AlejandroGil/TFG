@@ -4,16 +4,16 @@
   router="FAN">  
   <class id="1" language="java" name="myRecommender.ThresholdSimilarity" project="TFG" 
     file="/TFG/src/main/java/myRecommender/ThresholdSimilarity.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="884" y="321"/>    
+    <position height="-1" width="-1" x="1064" y="298"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="2" language="java" name="myRecommender.UserVectorGenerator" project="TFG" 
-    file="/TFG/src/main/java/myRecommender/UserVectorGenerator.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1235" y="1138"/>    
+  <class id="2" language="java" name="myRecommender.nmslib.UserVectorGenerator" project="TFG" 
+    file="/TFG/src/main/java/myRecommender/nmslib/UserVectorGenerator.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="1069" y="1145"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -22,8 +22,8 @@
   </class>  
   <class id="3" language="java" name="myRecommender.PearsonSimilarity" project="TFG" 
     file="/TFG/src/main/java/myRecommender/PearsonSimilarity.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="231" y="1096"/>    
-    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+    <position height="101" width="435" x="14" y="1046"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
@@ -31,7 +31,7 @@
   </class>  
   <class id="4" language="java" name="myRecommender.ThresholdItemSimilarity" project="TFG" 
     file="/TFG/src/main/java/myRecommender/ThresholdItemSimilarity.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1283" y="129"/>    
+    <position height="-1" width="-1" x="1507" y="111"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -40,7 +40,7 @@
   </class>  
   <class id="5" language="java" name="myRecommender.ThresholdUserSimilarity" project="TFG" 
     file="/TFG/src/main/java/myRecommender/ThresholdUserSimilarity.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1285" y="283"/>    
+    <position height="-1" width="-1" x="1504" y="268"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -49,8 +49,8 @@
   </class>  
   <class id="6" language="java" name="myRecommender.nmslib.NMSLibNeighborhood" project="TFG" 
     file="/TFG/src/main/java/myRecommender/nmslib/NMSLibNeighborhood.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="391" y="123"/>    
-    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+    <position height="155" width="638" x="14" y="46"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
@@ -58,7 +58,7 @@
   </class>  
   <class id="7" language="java" name="thrift.Client" project="TFG" file="/TFG/src/main/java/thrift/Client.java" 
     binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="908" y="1143"/>    
+    <position height="-1" width="-1" x="864" y="1143"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="false" static="true"/>      
@@ -67,7 +67,7 @@
   </class>  
   <class id="8" language="java" name="myRecommender.nmslib.NMSLibTest" project="TFG" 
     file="/TFG/src/main/java/myRecommender/nmslib/NMSLibTest.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="933" y="969"/>    
+    <position height="-1" width="-1" x="841" y="967"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -76,7 +76,7 @@
   </class>  
   <class id="9" language="java" name="myRecommender.MyUserNeighborhoodRecommender" project="TFG" 
     file="/TFG/src/main/java/myRecommender/MyUserNeighborhoodRecommender.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1170" y="542"/>    
+    <position height="-1" width="-1" x="1100" y="544"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -85,7 +85,7 @@
   </class>  
   <class id="10" language="java" name="myRecommender.SimilarityFromNeighborhood" project="TFG" 
     file="/TFG/src/main/java/myRecommender/SimilarityFromNeighborhood.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="887" y="112"/>    
+    <position height="-1" width="-1" x="1062" y="101"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -94,7 +94,7 @@
   </class>  
   <class id="11" language="java" name="myRecommender.MyItemNeighborhoodRecommender" project="TFG" 
     file="/TFG/src/main/java/myRecommender/MyItemNeighborhoodRecommender.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1171" y="772"/>    
+    <position height="-1" width="-1" x="1097" y="772"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -103,8 +103,8 @@
   </class>  
   <class id="12" language="java" name="myRecommender.PearsonItemSimilarity" project="TFG" 
     file="/TFG/src/main/java/myRecommender/PearsonItemSimilarity.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="237" y="1337"/>    
-    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+    <position height="83" width="436" x="13" y="1296"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
@@ -112,7 +112,7 @@
   </class>  
   <class id="13" language="java" name="myRecommender.nmslib.DatamodelTransformation" project="TFG" 
     file="/TFG/src/main/java/myRecommender/nmslib/DatamodelTransformation.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="388" y="403"/>    
+    <position height="-1" width="-1" x="334" y="402"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -121,7 +121,7 @@
   </class>  
   <class id="14" language="java" name="rankSysTest.Experiment" project="TFG" 
     file="/TFG/src/main/java/rankSysTest/Experiment.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="227" width="520" x="1398" y="954"/>    
+    <position height="227" width="520" x="1215" y="945"/>    
     <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -137,8 +137,8 @@
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </enumeration>  
-  <class id="16" language="java" name="myRecommender.FileUserNeighborhood" project="TFG" 
-    file="/TFG/src/main/java/myRecommender/FileUserNeighborhood.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="16" language="java" name="myRecommender.nmslib.FileUserNeighborhood" project="TFG" 
+    file="/TFG/src/main/java/myRecommender/nmslib/FileUserNeighborhood.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="663" y="1317"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
@@ -148,7 +148,7 @@
   </class>  
   <enumeration id="17" language="java" name="myRecommender.MyUserNeighborhoodRecommender.TRANSFORM" project="TFG" 
     file="/TFG/src/main/java/myRecommender/MyUserNeighborhoodRecommender.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1734" y="617"/>    
+    <position height="-1" width="-1" x="1663" y="622"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -157,8 +157,8 @@
   </enumeration>  
   <class id="18" language="java" name="myRecommender.Pearson" project="TFG" 
     file="/TFG/src/main/java/myRecommender/Pearson.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="233" y="784"/>    
-    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+    <position height="389" width="437" x="14" y="589"/>    
+    <display autosize="false" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
@@ -166,15 +166,15 @@
   </class>  
   <class id="19" language="java" name="myRecommender.PearsonUserSimilarity" project="TFG" 
     file="/TFG/src/main/java/myRecommender/PearsonUserSimilarity.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="228" y="1221"/>    
+    <position height="-1" width="-1" x="231" y="1207"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="20" language="java" name="myRecommender.CompareNeighbours" project="TFG" 
-    file="/TFG/src/main/java/myRecommender/CompareNeighbours.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="20" language="java" name="myRecommender.nmslib.CompareNeighbours" project="TFG" 
+    file="/TFG/src/main/java/myRecommender/nmslib/CompareNeighbours.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="1174" y="1312"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
@@ -189,36 +189,48 @@
     <end type="SOURCE" refId="9"/>    
     <end type="TARGET" refId="17"/>  
   </nesting>  
-  <nesting id="22">    
-    <end type="SOURCE" refId="7"/>    
-    <end type="TARGET" refId="15"/>  
-  </nesting>  
-  <association id="23">    
-    <end type="SOURCE" refId="6" navigable="false">      
-      <attribute id="24" name="transformation"/>      
-      <multiplicity id="25" minimum="0" maximum="1"/>    
-    </end>    
-    <end type="TARGET" refId="13" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="26">    
-    <end type="SOURCE" refId="11" navigable="false">      
-      <attribute id="27" name="t"/>      
-      <multiplicity id="28" minimum="0" maximum="1"/>    
+  <association id="22">    
+    <end type="SOURCE" refId="9" navigable="false">      
+      <attribute id="23" name="t">        
+        <position height="0" width="0" x="-71" y="5"/>      
+      </attribute>      
+      <multiplicity id="24" minimum="0" maximum="1">        
+        <position height="0" width="0" x="-71" y="5"/>      
+      </multiplicity>    
     </end>    
     <end type="TARGET" refId="17" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <generalization id="29">    
+  <generalization id="25">    
     <end type="SOURCE" refId="3"/>    
     <end type="TARGET" refId="18"/>  
   </generalization>  
-  <association id="30">    
-    <end type="SOURCE" refId="9" navigable="false">      
-      <attribute id="31" name="t"/>      
-      <multiplicity id="32" minimum="0" maximum="1"/>    
+  <nesting id="26">    
+    <end type="SOURCE" refId="7"/>    
+    <end type="TARGET" refId="15"/>  
+  </nesting>  
+  <association id="27">    
+    <end type="SOURCE" refId="11" navigable="false">      
+      <attribute id="28" name="t">        
+        <position height="0" width="0" x="-71" y="5"/>      
+      </attribute>      
+      <multiplicity id="29" minimum="0" maximum="1">        
+        <position height="0" width="0" x="-71" y="5"/>      
+      </multiplicity>    
     </end>    
     <end type="TARGET" refId="17" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="30">    
+    <end type="SOURCE" refId="6" navigable="false">      
+      <attribute id="31" name="transformation">        
+        <position height="0" width="0" x="-54" y="-1"/>      
+      </attribute>      
+      <multiplicity id="32" minimum="0" maximum="1">        
+        <position height="0" width="0" x="-54" y="-1"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="13" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
   <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
