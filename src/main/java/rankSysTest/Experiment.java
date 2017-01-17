@@ -110,9 +110,9 @@ public class Experiment {
 				System.exit(0);
 			}
 		} else if (args[0].equals("out_neighs")) {
-			if (args.length < 9) {
+			if (args.length < 7) {
 				System.out.println(
-						"Parameters incorrect -> out_neighs userPath itemPath trainData outfile sim norm k q [alpha]");
+						"Parameters incorrect -> out_neighs userPath itemPath trainData outfile sim k [alpha]");
 				System.exit(0);
 			}
 		}
